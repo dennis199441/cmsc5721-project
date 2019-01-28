@@ -97,7 +97,8 @@ Top 10% return stock: green
 71% - 90% return stock: orange
 Last 10% return stock: red
 '''
-def stock_performance_map(stock_map, buy_date, sell_date):
+def node_color_map(stock_map, buy_date, sell_date):
+	node_color_map = {}
 	stocks = stock_map.keys()
 	return_rates = []
 	for stock in stocks:
@@ -108,7 +109,44 @@ def stock_performance_map(stock_map, buy_date, sell_date):
 		return_rate = math.log(sell_price) - math.log(buy_price)
 		return_rates.append((stock, return_rate))
 	return_rates = sorted(return_rates, key=lambda kv: kv[1], reverse=True)
-	print(return_rates)
+	
+	pos_return = 0
+	neg_return = 0
+	count = len(return_rates)
+	for i in range(count):
+		stock = return_rates[i][0]
+		return_rate = return_rates[i][1]
+		if return_rate > 0:
+			pos_return += 1
+			node_color_map[stock] = 'g'
+		elif return_rate < 0:
+			neg_return += 1
+			node_color_map[stock] = 'r'
+		else:
+			node_color_map[stock] = 'y'
+		# if i < 0.2 * count:
+		# 	node_color_map[stock] = 'g'
+		# elif i >= 0.2 * count and i < 0.4 * count:
+		# 	node_color_map[stock] = 'c'
+		# elif i >= 0.4 * count and i < 0.6 * count:
+		# 	node_color_map[stock] = 'b'
+		# elif i >= 0.6 * count and i < 0.8 * count:
+		# 	node_color_map[stock] = 'y'
+		# else:
+		# 	node_color_map[stock] = 'r'
+
+	print("pos_return: {} / {} = {}".format(pos_return, count, pos_return/count))
+	print("neg_return: {} / {} = {}".format(neg_return, count, neg_return/count))
+	print()
+
+	return node_color_map
+
+def node_color_list(G, color_map):
+	colors = []
+	nodes = G.nodes()
+	for node in nodes:
+		colors.append(color_map[node])
+	return colors
 
 if __name__ == "__main__":
 
@@ -147,6 +185,9 @@ if __name__ == "__main__":
 	INDEX_RETURN_RATES = []
 	PORTFOLIO_SIZE = 10
 
+	plt.plot(INDEX_MAP['SPY']['price'])
+	plt.figure()
+
 	for index, (FROM_DATE, TO_DATE) in enumerate(zip(FROM_DATES, TO_DATES)):
 		NETWORK_NAME = get_network_name(FROM_DATE, TO_DATE)
 		if os.path.exists('./' + NETWORK_NAME) and TO_DATES[-1] != TO_DATE:
@@ -156,38 +197,41 @@ if __name__ == "__main__":
 			BUY_DATE = TO_DATES[DATE_INDEX]
 			SELL_DATE = TO_DATES[DATE_INDEX + 1]
 			
-			# performance_map = stock_performance_map(STOCK_MAP, BUY_DATE, SELL_DATE)
-			# print()
+			print("================================================================")
+			print("Date: {}, index: {}".format(BUY_DATE, DATE_INDEX))
+			color_map = node_color_map(STOCK_MAP, BUY_DATE, SELL_DATE)
+			node_color = node_color_list(STOCK_NETWORK, color_map)
+			nx.draw(STOCK_NETWORK, node_color=node_color, node_size=100, with_labels=False, font_size=8)
+			plt.show()
+			# portfolio = random_portfolio(STOCK_NETWORK, PORTFOLIO_SIZE)
+			
+			# print("=============================================================================================")
+			# print("Portfolio: ", portfolio)
+			# print("Buy at: {}, Sell at {}".format(BUY_DATE, SELL_DATE))
+			# cost = portfolio_value(STOCK_MAP, portfolio, BUY_DATE)
+			# revenue = portfolio_value(STOCK_MAP, portfolio, SELL_DATE)
+			# return_rate = math.log(revenue) - math.log(cost)
+			# RETURN_RATES.append(return_rate)
+			# print("Total cost: {}, Total revenue: {}, Return: {}".format(cost, revenue, return_rate))
+			
+			# index_cost = portfolio_value(INDEX_MAP, ['SPY'], BUY_DATE)
+			# index_revenue = portfolio_value(INDEX_MAP, ['SPY'], SELL_DATE)
+			# index_return_rate = math.log(index_revenue) - math.log(index_cost)
+			# INDEX_RETURN_RATES.append(index_return_rate)
+			# print("Index cost: {}, Index revenue: {}, Index Return: {}".format(index_cost, index_revenue, index_return_rate))
+			
 
-			portfolio = random_portfolio(STOCK_NETWORK, PORTFOLIO_SIZE)
-			
-			print("=============================================================================================")
-			print("Portfolio: ", portfolio)
-			print("Buy at: {}, Sell at {}".format(BUY_DATE, SELL_DATE))
-			cost = portfolio_value(STOCK_MAP, portfolio, BUY_DATE)
-			revenue = portfolio_value(STOCK_MAP, portfolio, SELL_DATE)
-			return_rate = math.log(revenue) - math.log(cost)
-			RETURN_RATES.append(return_rate)
-			print("Total cost: {}, Total revenue: {}, Return: {}".format(cost, revenue, return_rate))
-			
-			index_cost = portfolio_value(INDEX_MAP, ['SPY'], BUY_DATE)
-			index_revenue = portfolio_value(INDEX_MAP, ['SPY'], SELL_DATE)
-			index_return_rate = math.log(index_revenue) - math.log(index_cost)
-			INDEX_RETURN_RATES.append(index_return_rate)
-			print("Index cost: {}, Index revenue: {}, Index Return: {}".format(index_cost, index_revenue, index_return_rate))
-			
-
-	counter = 0
-	for i in range(len(RETURN_RATES)):
-		if RETURN_RATES[i] > INDEX_RETURN_RATES[i]:
-			counter += 1
+	# counter = 0
+	# for i in range(len(RETURN_RATES)):
+	# 	if RETURN_RATES[i] > INDEX_RETURN_RATES[i]:
+	# 		counter += 1
 	
-	print("=============================================================================================")
-	print("Beat market rate: {} / {} = {}".format(counter, len(RETURN_RATES), counter/len(RETURN_RATES)))
-	plt.title("Rate of return")
-	plt.plot(RETURN_RATES, label='portfolio')
-	plt.plot(INDEX_RETURN_RATES, label='index')
-	plt.legend()
-	# draw_degree_distribution(STOCK_NETWORK)
-	# draw_network(STOCK_NETWORK, False)
-	plt.show()
+	# print("=============================================================================================")
+	# print("Beat market rate: {} / {} = {}".format(counter, len(RETURN_RATES), counter/len(RETURN_RATES)))
+	# plt.title("Rate of return")
+	# plt.plot(RETURN_RATES, label='portfolio')
+	# plt.plot(INDEX_RETURN_RATES, label='index')
+	# plt.legend()
+	# # draw_degree_distribution(STOCK_NETWORK)
+	# # draw_network(STOCK_NETWORK, False)
+	# plt.show()
