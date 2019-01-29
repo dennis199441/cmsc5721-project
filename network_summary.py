@@ -1,9 +1,10 @@
-import os, math, random
+import os, math, random, bisect
 import networkx as nx
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from load_data import get_network_name, get_stock_map, get_date_index
+from strategy import trading_strategy
 
 def draw_degree_distribution(graph):
 	degree_sequence = [d for n, d in graph.degree()]
@@ -30,7 +31,7 @@ def draw_degree_distribution(graph):
 '''
 Draw the COPY of network. Reference of `graph` is not modified
 '''
-def draw_network(graph, ignore_isolates=False):
+def draw_network(stock_map, graph, buy_date, sell_date, ignore_isolates=False):
 	temp = graph.copy()
 	if ignore_isolates:
 		to_be_removed = []
@@ -40,12 +41,15 @@ def draw_network(graph, ignore_isolates=False):
 				to_be_removed.append(degree[0])
 		temp.remove_nodes_from(to_be_removed)
 
-	draw_network_helper(temp)
+	draw_network_helper(stock_map, temp, buy_date, sell_date)
 
-def draw_network_helper(graph):
+def draw_network_helper(stock_map, graph, buy_date, sell_date):
 	plt.figure()
-	nx.draw_networkx(graph, with_labels=True)
-	plt.title('Stock network')
+	plt.title('Stock network from {} to {}'.format(buy_date, sell_date))
+	color_map = node_color_map(stock_map, buy_date, sell_date)
+	node_color = node_color_list(graph, color_map)
+	nx.draw(graph, node_color=node_color, node_size=100, with_labels=False, font_size=8)
+	plt.show()
 
 def print_network_summary(graph):
 	print("number_of_nodes: {}".format(graph.number_of_nodes()))
@@ -64,23 +68,6 @@ def print_network_summary(graph):
 			counter += 1
 	print("number_of_connected_components (without isolates): {}".format(counter))
 	print()
-
-def top_n_degree_centrality_nodes(G, n):
-	centralities = nx.closeness_centrality(G)
-	sorted_by_value = sorted(centralities.items(), key=lambda kv: kv[1], reverse=True)
-	portfolio = []
-	for i in range(n):
-		portfolio.append(sorted_by_value[i][0])
-	return portfolio
-
-def random_portfolio(G, n):
-	portfolio = []
-	nodes = list(G.nodes())
-	while len(portfolio) < n:
-		asset = random.choice(nodes)
-		if asset not in portfolio:
-			portfolio.append(asset)
-	return portfolio
 
 def portfolio_value(stock_map, portfolio, date):
 	value = 0
@@ -124,20 +111,6 @@ def node_color_map(stock_map, buy_date, sell_date):
 			node_color_map[stock] = 'r'
 		else:
 			node_color_map[stock] = 'y'
-		# if i < 0.2 * count:
-		# 	node_color_map[stock] = 'g'
-		# elif i >= 0.2 * count and i < 0.4 * count:
-		# 	node_color_map[stock] = 'c'
-		# elif i >= 0.4 * count and i < 0.6 * count:
-		# 	node_color_map[stock] = 'b'
-		# elif i >= 0.6 * count and i < 0.8 * count:
-		# 	node_color_map[stock] = 'y'
-		# else:
-		# 	node_color_map[stock] = 'r'
-
-	print("pos_return: {} / {} = {}".format(pos_return, count, pos_return/count))
-	print("neg_return: {} / {} = {}".format(neg_return, count, neg_return/count))
-	print()
 
 	return node_color_map
 
@@ -153,7 +126,7 @@ if __name__ == "__main__":
 	STOCK_MAP = get_stock_map(size=5000)
 	INDEX_MAP = get_stock_map(data_path="sandp500_data/index", size=1)
 
-	FROM_DATES = [
+	DATES = [
 		'2014-01-24','2014-02-24','2014-03-24','2014-04-24','2014-05-24','2014-06-24',
 		'2014-07-24','2014-08-24','2014-09-24','2014-10-24','2014-11-24','2014-12-24',
 		'2015-01-24','2015-02-24','2015-03-24','2015-04-24','2015-05-24','2015-06-24',
@@ -162,20 +135,17 @@ if __name__ == "__main__":
 		'2016-07-24','2016-08-24','2016-09-24','2016-10-24','2016-11-24','2016-12-24',
 		'2017-01-24','2017-02-24','2017-03-24','2017-04-24','2017-05-24','2017-06-24',
 		'2017-07-24','2017-08-24','2017-09-24','2017-10-24','2017-11-24','2017-12-24',
-		'2018-01-24'
+		'2018-01-24','2018-02-24','2018-03-24','2018-04-24','2018-05-24','2018-06-24',
+		'2018-07-24','2018-08-24','2018-09-24','2018-10-24','2018-11-24','2018-12-24',
+		'2019-01-24'
 	]
+	TIMESCALE = 6
 
-	TO_DATES = [
-		'2015-01-23','2015-02-23','2015-03-23','2015-04-23','2015-05-23','2015-06-23',
-		'2015-07-23','2015-08-23','2015-09-23','2015-10-23','2015-11-23','2015-12-23',
-		'2016-01-23','2016-02-23','2016-03-23','2016-04-23','2016-05-23','2016-06-23',
-		'2016-07-23','2016-08-23','2016-09-23','2016-10-23','2016-11-23','2016-12-23',
-		'2017-01-23','2017-02-23','2017-03-23','2017-04-23','2017-05-23','2017-06-23',
-		'2017-07-23','2017-08-23','2017-09-23','2017-10-23','2017-11-23','2017-12-23',
-		'2018-01-23','2018-02-23','2018-03-23','2018-04-23','2018-05-23','2018-06-23',
-		'2018-07-23','2018-08-23','2018-09-23','2018-10-23','2018-11-23','2018-12-23',
-		'2019-01-23'
-	]
+	FOLDER_NAME = 'network_data/stocknet_' + str(TIMESCALE) + 'month/'
+	
+	PORTFOLIO_SIZE = 20
+
+	LAST_DAY = '2019-01-23'
 
 	NUMBER_EDGES = []
 	NUMBER_ISOLATES = []
@@ -183,55 +153,50 @@ if __name__ == "__main__":
 	SIZE_LARGEST_COMPONENT= []
 	RETURN_RATES = []
 	INDEX_RETURN_RATES = []
-	PORTFOLIO_SIZE = 10
 
-	plt.plot(INDEX_MAP['SPY']['price'])
-	plt.figure()
 
-	for index, (FROM_DATE, TO_DATE) in enumerate(zip(FROM_DATES, TO_DATES)):
-		NETWORK_NAME = get_network_name(FROM_DATE, TO_DATE)
-		if os.path.exists('./' + NETWORK_NAME) and TO_DATES[-1] != TO_DATE:
+	for index in range(len(DATES) - TIMESCALE -1):
+		FROM_DATE = DATES[index]
+		TO_DATE = DATES[index + TIMESCALE]
+		NETWORK_NAME = FOLDER_NAME + get_network_name(FROM_DATE, TO_DATE)
+
+		BUY_DATE = TO_DATE
+		SELL_DATE = DATES[index + TIMESCALE + 1]
+		
+		if SELL_DATE == '2019-01-24':
+			SELL_DATE = LAST_DAY
+
+		if os.path.exists('./' + NETWORK_NAME):
 			STOCK_NETWORK = nx.read_adjlist(NETWORK_NAME)
-
-			DATE_INDEX = TO_DATES.index(TO_DATE)
-			BUY_DATE = TO_DATES[DATE_INDEX]
-			SELL_DATE = TO_DATES[DATE_INDEX + 1]
+			# draw_network(STOCK_MAP, STOCK_NETWORK, FROM_DATE, TO_DATE)
+			portfolio = trading_strategy(STOCK_NETWORK, PORTFOLIO_SIZE)
 			
-			print("================================================================")
-			print("Date: {}, index: {}".format(BUY_DATE, DATE_INDEX))
-			color_map = node_color_map(STOCK_MAP, BUY_DATE, SELL_DATE)
-			node_color = node_color_list(STOCK_NETWORK, color_map)
-			nx.draw(STOCK_NETWORK, node_color=node_color, node_size=100, with_labels=False, font_size=8)
-			plt.show()
-			# portfolio = random_portfolio(STOCK_NETWORK, PORTFOLIO_SIZE)
+			print("=============================================================================================")
+			print("Stock Network: {}".format(NETWORK_NAME))
+			print("Portfolio: ", portfolio)
+			print("Buy at: {}, Sell at {}".format(BUY_DATE, SELL_DATE))
+			cost = portfolio_value(STOCK_MAP, portfolio, BUY_DATE)
+			revenue = portfolio_value(STOCK_MAP, portfolio, SELL_DATE)
+			return_rate = math.log(revenue) - math.log(cost)
+			RETURN_RATES.append(return_rate)
+			print("Total cost: {}, Total revenue: {}, Return: {}".format(cost, revenue, return_rate))
 			
-			# print("=============================================================================================")
-			# print("Portfolio: ", portfolio)
-			# print("Buy at: {}, Sell at {}".format(BUY_DATE, SELL_DATE))
-			# cost = portfolio_value(STOCK_MAP, portfolio, BUY_DATE)
-			# revenue = portfolio_value(STOCK_MAP, portfolio, SELL_DATE)
-			# return_rate = math.log(revenue) - math.log(cost)
-			# RETURN_RATES.append(return_rate)
-			# print("Total cost: {}, Total revenue: {}, Return: {}".format(cost, revenue, return_rate))
-			
-			# index_cost = portfolio_value(INDEX_MAP, ['SPY'], BUY_DATE)
-			# index_revenue = portfolio_value(INDEX_MAP, ['SPY'], SELL_DATE)
-			# index_return_rate = math.log(index_revenue) - math.log(index_cost)
-			# INDEX_RETURN_RATES.append(index_return_rate)
-			# print("Index cost: {}, Index revenue: {}, Index Return: {}".format(index_cost, index_revenue, index_return_rate))
+			index_cost = portfolio_value(INDEX_MAP, ['SPY'], BUY_DATE)
+			index_revenue = portfolio_value(INDEX_MAP, ['SPY'], SELL_DATE)
+			index_return_rate = math.log(index_revenue) - math.log(index_cost)
+			INDEX_RETURN_RATES.append(index_return_rate)
+			print("Index cost: {}, Index revenue: {}, Index Return: {}".format(index_cost, index_revenue, index_return_rate))
 			
 
-	# counter = 0
-	# for i in range(len(RETURN_RATES)):
-	# 	if RETURN_RATES[i] > INDEX_RETURN_RATES[i]:
-	# 		counter += 1
+	counter = 0
+	for i in range(len(RETURN_RATES)):
+		if RETURN_RATES[i] > INDEX_RETURN_RATES[i]:
+			counter += 1
 	
-	# print("=============================================================================================")
-	# print("Beat market rate: {} / {} = {}".format(counter, len(RETURN_RATES), counter/len(RETURN_RATES)))
-	# plt.title("Rate of return")
-	# plt.plot(RETURN_RATES, label='portfolio')
-	# plt.plot(INDEX_RETURN_RATES, label='index')
-	# plt.legend()
-	# # draw_degree_distribution(STOCK_NETWORK)
-	# # draw_network(STOCK_NETWORK, False)
-	# plt.show()
+	print("=============================================================================================")
+	print("Beat Market Rate: {} / {} = {}".format(counter, len(RETURN_RATES), counter/len(RETURN_RATES)))
+	plt.title("Rate of return")
+	plt.plot(RETURN_RATES, label='portfolio')
+	plt.plot(INDEX_RETURN_RATES, label='index')
+	plt.legend()
+	plt.show()

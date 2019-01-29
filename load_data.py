@@ -122,7 +122,7 @@ def get_network_name(from_date, to_date):
 	return 'stocknet_' + from_date.replace('-', '') + '_' + to_date.replace('-', '') + '.adjlist'
 
 
-
+## Global Variables
 STOCK_MAP = get_stock_map(size=5000)
 
 DATES = [
@@ -140,7 +140,9 @@ DATES = [
 ]
 
 TIMESCALE = 12
+
 FOLDER_NAME = 'network_data/stocknet_' + str(TIMESCALE) + 'month/'
+## Global Variables
 
 def concurrent_procedure(index):
 	FROM_DATE = DATES[index]
