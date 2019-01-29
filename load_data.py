@@ -1,3 +1,4 @@
+import concurrent.futures
 import csv, os, math, sys, re, bisect
 import networkx as nx
 from pytalib.graph import visibility_graph
@@ -118,40 +119,40 @@ def construct_stock_network(stock_map, from_date='2014-01-24', to_date='2019-01-
 	return G
 
 def get_network_name(from_date, to_date):
-	return 'stocknet/stocknet_' + from_date.replace('-', '') + '_' + to_date.replace('-', '') + '.adjlist'
+	return 'stocknet_' + from_date.replace('-', '') + '_' + to_date.replace('-', '') + '.adjlist'
+
+
+
+STOCK_MAP = get_stock_map(size=5000)
+
+DATES = [
+	'2014-01-24','2014-02-24','2014-03-24','2014-04-24','2014-05-24','2014-06-24',
+	'2014-07-24','2014-08-24','2014-09-24','2014-10-24','2014-11-24','2014-12-24',
+	'2015-01-24','2015-02-24','2015-03-24','2015-04-24','2015-05-24','2015-06-24',
+	'2015-07-24','2015-08-24','2015-09-24','2015-10-24','2015-11-24','2015-12-24',
+	'2016-01-24','2016-02-24','2016-03-24','2016-04-24','2016-05-24','2016-06-24',
+	'2016-07-24','2016-08-24','2016-09-24','2016-10-24','2016-11-24','2016-12-24',
+	'2017-01-24','2017-02-24','2017-03-24','2017-04-24','2017-05-24','2017-06-24',
+	'2017-07-24','2017-08-24','2017-09-24','2017-10-24','2017-11-24','2017-12-24',
+	'2018-01-24','2018-02-24','2018-03-24','2018-04-24','2018-05-24','2018-06-24',
+	'2018-07-24','2018-08-24','2018-09-24','2018-10-24','2018-11-24','2018-12-24',
+	'2019-01-24'
+]
+
+TIMESCALE = 12
+FOLDER_NAME = 'network_data/stocknet_' + str(TIMESCALE) + 'month/'
+
+def concurrent_procedure(index):
+	FROM_DATE = DATES[index]
+	TO_DATE = DATES[index + TIMESCALE]
+	NETWORK_NAME = FOLDER_NAME + get_network_name(FROM_DATE, TO_DATE)
+	if not os.path.exists('./' + NETWORK_NAME):
+		print("========================================================")
+		print("Start generate {}...".format(NETWORK_NAME))
+		STOCK_NETWORK = construct_stock_network(STOCK_MAP, from_date=FROM_DATE, to_date=TO_DATE, output_name=NETWORK_NAME)
+		print("Generate {} completed.".format(NETWORK_NAME))
 
 if __name__ == "__main__":
-
-	STOCK_MAP = get_stock_map(size=5000)
-
-	FROM_DATES = [
-		'2014-01-24','2014-02-24','2014-03-24','2014-04-24','2014-05-24','2014-06-24',
-		'2014-07-24','2014-08-24','2014-09-24','2014-10-24','2014-11-24','2014-12-24',
-		'2015-01-24','2015-02-24','2015-03-24','2015-04-24','2015-05-24','2015-06-24',
-		'2015-07-24','2015-08-24','2015-09-24','2015-10-24','2015-11-24','2015-12-24',
-		'2016-01-24','2016-02-24','2016-03-24','2016-04-24','2016-05-24','2016-06-24',
-		'2016-07-24','2016-08-24','2016-09-24','2016-10-24','2016-11-24','2016-12-24',
-		'2017-01-24','2017-02-24','2017-03-24','2017-04-24','2017-05-24','2017-06-24',
-		'2017-07-24','2017-08-24','2017-09-24','2017-10-24','2017-11-24','2017-12-24',
-		'2018-01-24'
-	]
-
-	TO_DATES = [
-		'2015-01-23','2015-02-23','2015-03-23','2015-04-23','2015-05-23','2015-06-23',
-		'2015-07-23','2015-08-23','2015-09-23','2015-10-23','2015-11-23','2015-12-23',
-		'2016-01-23','2016-02-23','2016-03-23','2016-04-23','2016-05-23','2016-06-23',
-		'2016-07-23','2016-08-23','2016-09-23','2016-10-23','2016-11-23','2016-12-23',
-		'2017-01-23','2017-02-23','2017-03-23','2017-04-23','2017-05-23','2017-06-23',
-		'2017-07-23','2017-08-23','2017-09-23','2017-10-23','2017-11-23','2017-12-23',
-		'2018-01-23','2018-02-23','2018-03-23','2018-04-23','2018-05-23','2018-06-23',
-		'2018-07-23','2018-08-23','2018-09-23','2018-10-23','2018-11-23','2018-12-23',
-		'2019-01-23'
-	]
-
-	for index, (FROM_DATE, TO_DATE) in enumerate(zip(FROM_DATES, TO_DATES)):
-		NETWORK_NAME = get_network_name(FROM_DATE, TO_DATE)
-		if not os.path.exists('./' + NETWORK_NAME):
-			print("========================================================")
-			print("Start generate {}...".format(NETWORK_NAME))
-			STOCK_NETWORK = construct_stock_network(STOCK_MAP, from_date=FROM_DATE, to_date=TO_DATE, output_name=NETWORK_NAME)
-			print("Generate {} completed.".format(NETWORK_NAME))
+	with concurrent.futures.ProcessPoolExecutor() as executor:
+		for STOCK_NETWORK in executor.map(concurrent_procedure, range(len(DATES) - TIMESCALE)):
+			pass
