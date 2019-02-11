@@ -1,5 +1,5 @@
 import concurrent.futures
-import csv, os, math, sys, re, bisect
+import csv, os, math, sys, re, bisect, pickle
 import networkx as nx
 from pytalib.graph import visibility_graph
 from itertools import combinations
@@ -111,15 +111,35 @@ def log_return(series, timescale=1):
 def construct_stock_network(stock_map, from_date='2014-01-24', to_date='2019-01-23', threshold=0.6, output_name='stock_network.adjlist'):
 	pearson_correlations, mhvgca_correlations = get_cross_correlations(stock_map, from_date=from_date, to_date=to_date)
 	G = nx.Graph()
-	G.add_nodes_from(list(stock_map.keys()))
+	nodes = list(stock_map.keys())
+
+	for node in nodes:
+		from_date_index = get_date_index(stock_map, node, from_date)
+		if to_date < LAST_DAY:
+			to_date_index = get_date_index(stock_map, node, to_date)
+		else:
+			to_date_index = get_date_index(stock_map, node, LAST_DAY)
+		if stock_map[node]['price'][from_date_index] < stock_map[node]['price'][to_date_index]:
+			performance = 1
+		elif stock_map[node]['price'][from_date_index] > stock_map[node]['price'][to_date_index]:
+			performance = -1
+		else:
+			performance = 0
+
+		G.add_node(node, performance=performance)
+
 	for correlation in pearson_correlations:
 		if correlation[1] >= threshold:
 			G.add_edge(*correlation[0])
-	nx.write_adjlist(G,output_name)
+
+	pickle_out = open(output_name, 'wb')
+	pickle.dump(G, pickle_out)
+	pickle_out.close()
+
 	return G
 
 def get_network_name(from_date, to_date):
-	return 'stocknet_' + from_date.replace('-', '') + '_' + to_date.replace('-', '') + '.adjlist'
+	return 'stocknet_' + from_date.replace('-', '') + '_' + to_date.replace('-', '') + '.pickle'
 
 
 ## Global Variables
@@ -139,19 +159,27 @@ DATES = [
 	'2019-01-24'
 ]
 
-TIMESCALE = 12
+TIMESCALE = 6
 
-FOLDER_NAME = 'network_data/stocknet_' + str(TIMESCALE) + 'month/'
+THRESHOLD = 0.5
+
+FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month_' + str(THRESHOLD) + 'threshold/'
+
+LAST_DAY = '2019-01-23'
 ## Global Variables
 
 def concurrent_procedure(index):
 	FROM_DATE = DATES[index]
 	TO_DATE = DATES[index + TIMESCALE]
 	NETWORK_NAME = FOLDER_NAME + get_network_name(FROM_DATE, TO_DATE)
+
+	if not os.path.exists(FOLDER_NAME):
+		os.makedirs(FOLDER_NAME)
+
 	if not os.path.exists('./' + NETWORK_NAME):
 		print("========================================================")
 		print("Start generate {}...".format(NETWORK_NAME))
-		STOCK_NETWORK = construct_stock_network(STOCK_MAP, from_date=FROM_DATE, to_date=TO_DATE, output_name=NETWORK_NAME)
+		STOCK_NETWORK = construct_stock_network(STOCK_MAP, from_date=FROM_DATE, to_date=TO_DATE, threshold=THRESHOLD, output_name=NETWORK_NAME)
 		print("Generate {} completed.".format(NETWORK_NAME))
 
 if __name__ == "__main__":
