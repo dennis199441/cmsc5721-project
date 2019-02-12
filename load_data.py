@@ -6,6 +6,12 @@ from itertools import combinations
 from scipy import stats
 
 def get_stock_map(data_path="sandp500_data", size=10):
+	industry_pickle = open(data_path + '/industry_dict.pickle', "rb")
+	industry_dict = pickle.load(industry_pickle)
+
+	sector_pickle = open(data_path + '/sector_dict.pickle', "rb")
+	sector_dict = pickle.load(sector_pickle)
+
 	date_pattern = re.compile('[0-9]{4}-[0-9]{2}-[0-9]{2}$')
 	stock_map = {}
 	counter = 0
@@ -32,6 +38,8 @@ def get_stock_map(data_path="sandp500_data", size=10):
 			data_map['date'] = dates
 			data_map['price'] = prices
 			data_map['volume'] = volumes
+			data_map['industry'] = industry_dict[name]
+			data_map['sector'] = sector_dict[name]
 			stock_map[name] = data_map
 			counter += 1
 
@@ -159,7 +167,7 @@ DATES = [
 	'2019-01-24'
 ]
 
-TIMESCALE = 6
+TIMESCALE = 12
 
 THRESHOLD = 0.5
 
