@@ -24,12 +24,11 @@ def draw_network_with_sector(stock_map, graph, from_date, to_date, ignore_isolat
 def draw_network_with_sector_helper(stock_map, graph, from_date, to_date):
 	plt.figure()
 	plt.title('Stock network with sector from {} to {}'.format(from_date, to_date))
-	color_map = sector_node_color_map(graph, stock_map, from_date, to_date)
+	color_map = sector_node_color_map(graph, stock_map)
 	node_color = node_color_list(graph, color_map)
 	nx.draw(graph, node_color=node_color, node_size=100, with_labels=False, font_size=8)
-	plt.show()
 
-def sector_node_color_map(graph, stock_map, from_date, to_date):
+def sector_node_color_map(graph, stock_map):
 	node_color_map = {}
 	nodes = list(graph.nodes(data=True))
 	for node in nodes:
@@ -45,6 +44,13 @@ def node_color_list(G, color_map):
 	for node in nodes:
 		colors.append(color_map[node])
 	return colors
+
+def draw_network_with_communities(stock_map, graph, communities, from_date, to_date):
+	plt.figure()
+	plt.title('Stock network with communities from {} to {}'.format(from_date, to_date))
+	color_map = sector_node_color_map(graph, stock_map)
+	node_color = node_color_list(graph, color_map)
+	nx.draw(graph, node_color=node_color, node_size=100, with_labels=False, font_size=8)
 
 if __name__ == "__main__":
 
@@ -101,3 +107,4 @@ if __name__ == "__main__":
 			# print("Number of communities (without isolates): {}".format(len(communities) - len(isolates)))
 			draw_network_with_sector(STOCK_MAP, STOCK_NETWORK, FROM_DATE, TO_DATE, ignore_isolates=False)
 
+			plt.show()
