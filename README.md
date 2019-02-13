@@ -28,7 +28,7 @@ Correlation coefficient for each pair of stocks is computed using the historical
 If the correlation coefficient between the two stocks is greater than the pre-defined threshold, currently 0.6 is used, there is an edge between the two stocks.
 
 ### Example
-<img src="https://github.com/dennis199441/cmsc5721-project/blob/master/example/example_1.png" width="50%" height="50%">
+<img src="https://github.com/dennis199441/cmsc5721-project/blob/master/example/example_3.png" width="50%" height="50%">
 
 <img src="https://github.com/dennis199441/cmsc5721-project/blob/master/example/example_2.png" width="50%" height="50%">
 
