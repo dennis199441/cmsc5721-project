@@ -95,7 +95,7 @@ def print_network_summary(graph):
 if __name__ == "__main__":
 
 	STOCK_MAP = get_stock_map(size=5000)
-	INDEX_MAP = get_stock_map(data_path="sandp500_data/index", size=1)
+	INDEX_MAP = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
 
 	DATES = [
 		'2014-01-24','2014-02-24','2014-03-24','2014-04-24','2014-05-24','2014-06-24',
@@ -111,8 +111,8 @@ if __name__ == "__main__":
 		'2019-01-24'
 	]
 
-	TIMESCALE = 12
-	THRESHOLD = 0.7
+	TIMESCALE = 6
+	THRESHOLD = 0.6
 	FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month_' + str(THRESHOLD) + 'threshold/'
 	# FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month/'
 	PORTFOLIO_SIZE = 20
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 		if os.path.exists('./' + NETWORK_NAME):
 			pickle_in = open(NETWORK_NAME, "rb")
 			STOCK_NETWORK = pickle.load(pickle_in)
-
+			draw_network_with_metadata(STOCK_MAP, STOCK_NETWORK, BUY_DATE, SELL_DATE)
 			selected_portfolio = Strategies.top_n_meta_degree_centrality(STOCK_NETWORK, PORTFOLIO_SIZE)
 			
 			print("=============================================================================================")
