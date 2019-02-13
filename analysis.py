@@ -46,10 +46,10 @@ def draw_network_with_metadata(stock_map, graph, buy_date, sell_date, ignore_iso
 
 def draw_network_with_metadata_helper(stock_map, graph, buy_date, sell_date):
 	plt.figure()
-	plt.title('Stock network with metadata from {} to {}'.format(buy_date, sell_date))
+	plt.title('Stock network from {} to {}'.format(buy_date, sell_date))
 	color_map = metadata_node_color_map(graph, stock_map, buy_date, sell_date)
 	node_color = node_color_list(graph, color_map)
-	nx.draw(graph, node_color=node_color, node_size=100, with_labels=True, font_size=8)
+	nx.draw(graph, node_color=node_color, node_size=100, with_labels=False, font_size=8)
 	plt.show()
 
 def metadata_node_color_map(graph, stock_map, buy_date, sell_date):
