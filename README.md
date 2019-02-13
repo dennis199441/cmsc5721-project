@@ -16,11 +16,11 @@ Date ranges: 2014-01-24 to 2019-01-23
 2. 12 months
 
 ### Node
-Each stock will be represented as a node in the graph.
-Metadata: performance
-1. +1 if price increased over the past month
-2. -1 if price decreased over the past month
-3. 0 if price does not change over the past month
+Each stock will be represented as a node in the graph. Performance is embedded as metadata.
+
+1. +1 if price increased over the past month (Green)
+2. -1 if price decreased over the past month (Red)
+3. 0 if price does not change over the past month (Yellow)
 
 ### Edge
 Correlation coefficient for each pair of stocks is computed using the historical daily price under the specified time frame (6 months or 12 months).
