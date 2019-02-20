@@ -32,7 +32,7 @@ def draw_degree_distribution(graph):
 '''
 Draw the COPY of network. Reference of `graph` is not modified
 '''
-def draw_network_with_metadata(stock_map, graph, buy_date, sell_date, ignore_isolates=False):
+def draw_network_with_metadata(stock_map, network_name, graph, ignore_isolates=False):
 	temp = graph.copy()
 	if ignore_isolates:
 		to_be_removed = []
@@ -42,17 +42,17 @@ def draw_network_with_metadata(stock_map, graph, buy_date, sell_date, ignore_iso
 				to_be_removed.append(degree[0])
 		temp.remove_nodes_from(to_be_removed)
 
-	draw_network_with_metadata_helper(stock_map, temp, buy_date, sell_date)
+	draw_network_with_metadata_helper(stock_map, network_name, temp)
 
-def draw_network_with_metadata_helper(stock_map, graph, buy_date, sell_date):
+def draw_network_with_metadata_helper(stock_map, network_name, graph):
 	plt.figure()
-	plt.title('Stock network from {} to {}'.format(buy_date, sell_date))
-	color_map = metadata_node_color_map(graph, stock_map, buy_date, sell_date)
+	plt.title(network_name.split('/')[-1])
+	color_map = metadata_node_color_map(graph, stock_map)
 	node_color = node_color_list(graph, color_map)
 	nx.draw(graph, node_color=node_color, node_size=100, with_labels=False, font_size=8)
 	plt.show()
 
-def metadata_node_color_map(graph, stock_map, buy_date, sell_date):
+def metadata_node_color_map(graph, stock_map):
 	node_color_map = {}
 	nodes = list(graph.nodes(data=True))
 	for node in nodes:
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 	]
 
 	TIMESCALE = 6
-	THRESHOLD = 0.6
+	THRESHOLD = 0.5
 	FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month_' + str(THRESHOLD) + 'threshold/'
 	# FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month/'
 	PORTFOLIO_SIZE = 20
@@ -138,8 +138,10 @@ if __name__ == "__main__":
 		if os.path.exists('./' + NETWORK_NAME):
 			pickle_in = open(NETWORK_NAME, "rb")
 			STOCK_NETWORK = pickle.load(pickle_in)
-			draw_network_with_metadata(STOCK_MAP, STOCK_NETWORK, BUY_DATE, SELL_DATE)
-			selected_portfolio = Strategies.top_n_meta_degree_centrality(STOCK_NETWORK, PORTFOLIO_SIZE)
+			edges = list(STOCK_NETWORK.edges(data=True))
+
+			# draw_network_with_metadata(STOCK_MAP, NETWORK_NAME, STOCK_NETWORK)
+			selected_portfolio = Strategies.top_n_custom_page_rank(STOCK_NETWORK, PORTFOLIO_SIZE)
 			
 			print("=============================================================================================")
 			print("Stock Network: {}".format(NETWORK_NAME))

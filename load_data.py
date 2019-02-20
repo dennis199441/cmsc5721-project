@@ -1,6 +1,7 @@
 import concurrent.futures
-import csv, os, math, sys, re, bisect, pickle
+import csv, os, math, sys, re, bisect, pickle, statistics
 import networkx as nx
+import numpy as np
 from pytalib.graph import visibility_graph
 from itertools import combinations
 from scipy import stats
@@ -97,7 +98,7 @@ def get_cross_correlations(stock_map, data_map_key='price', from_date='2014-01-2
 		# 	G_s, P_s = visibility_graph.mhvgca_method(series_a, series_b, timescale)
 		# 	mhvgca_correlations.append((conbination, G_s[-1]))
 
-		pearson_correlation = stats.pearsonr(log_return(series_a, timescale), log_return(series_b, timescale))[0]
+		pearson_correlation = stats.pearsonr(calculate_log_return(series_a, timescale), calculate_log_return(series_b, timescale))[0]
 		pearson_correlations.append((conbination, pearson_correlation))
 		i += 1
 	return pearson_correlations, mhvgca_correlations
@@ -110,13 +111,23 @@ def create_file(filename, data):
 	f.close()
 	print("Create {} [END]".format(filename))
 
-def log_return(series, timescale=1):
+def calculate_log_return(series, timescale=1):
 	result = []
 	for i in range(len(series)):
 		if i >= timescale:
 			log_return = math.log(series[i]) - math.log(series[i - timescale])
 			result.append(log_return)
 	return result
+
+def evaluate_performance(stock_map, node, from_date_index, to_date_index):
+	if stock_map[node]['price'][from_date_index] < stock_map[node]['price'][to_date_index]:
+		performance = 1
+	elif stock_map[node]['price'][from_date_index] > stock_map[node]['price'][to_date_index]:
+		performance = -1
+	else:
+		performance = 0
+
+	return performance
 
 def construct_stock_network(stock_map, from_date='2014-01-24', to_date='2019-01-23', threshold=0.6, output_name='stock_network.adjlist'):
 	pearson_correlations, mhvgca_correlations = get_cross_correlations(stock_map, from_date=from_date, to_date=to_date)
@@ -129,18 +140,20 @@ def construct_stock_network(stock_map, from_date='2014-01-24', to_date='2019-01-
 			to_date_index = get_date_index(stock_map, node, to_date)
 		else:
 			to_date_index = get_date_index(stock_map, node, LAST_DAY)
-		if stock_map[node]['price'][from_date_index] < stock_map[node]['price'][to_date_index]:
-			performance = 1
-		elif stock_map[node]['price'][from_date_index] > stock_map[node]['price'][to_date_index]:
-			performance = -1
-		else:
-			performance = 0
 
-		G.add_node(node, performance=performance)
+		price_series = stock_map[node]['price'][from_date_index : to_date_index]
+		log_return_series = calculate_log_return(price_series)
+		mean_return = np.mean(log_return_series)
+		std_return = np.std(log_return_series)
+		performance = evaluate_performance(stock_map, node, from_date_index, to_date_index)
+
+		G.add_node(node, performance=performance, mean_return=mean_return, std_return=std_return)
 
 	for correlation in pearson_correlations:
-		if correlation[1] >= threshold:
-			G.add_edge(*correlation[0])
+		pair = correlation[0]
+		coefficient = correlation[1]
+		if abs(coefficient) >= threshold:
+			G.add_edge(*pair, weight=coefficient)
 
 	pickle_out = open(output_name, 'wb')
 	pickle.dump(G, pickle_out)
@@ -169,7 +182,7 @@ DATES = [
 	'2019-01-24'
 ]
 
-TIMESCALE = 12
+TIMESCALE = 6
 
 THRESHOLD = 0.5
 

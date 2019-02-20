@@ -16,16 +16,18 @@ Date ranges: 2014-01-24 to 2019-01-23
 2. 12 months
 
 ### Node
-Each stock will be represented as a node in the graph. Performance is embedded as metadata.
+Each stock is represented as a node in the stock correlation network. Metadata is embedded in each node.
 
-1. +1 if price increased over the past month (Green)
-2. -1 if price decreased over the past month (Red)
-3. 0 if price does not change over the past month (Yellow)
+Metadata:
+1. performance: +1/0/-1 indicate if price increase/remains/decreses throughout the historical time period
+2. mean_return: average daily return under historical time period
+3. std_return: standard deviation daily return under historical time period
+
 
 ### Edge
-Correlation coefficient for each pair of stocks is computed using the historical daily price under the specified time frame (6 months or 12 months).
+Stock pairwise correlation is computed in order to decide whether there is an edge between two stocks. Intuitively, stock pair with low absolute correlation coefficient, relatively close to zero, is very weakly correlated. We filtered out these edges using a threshold theta (0.6) so that edge exists only if there are some relatively significant relationship between stocks (positively/negatively correlated)
 
-If the correlation coefficient between the two stocks is greater than the pre-defined threshold, currently 0.6 is used, there is an edge between the two stocks.
+Every edge is weighted by the pairwise correlation coefficient. If the absolute correlation coefficient between the two stocks is greater than the pre-defined threshold, currently 0.6 is used, there is an edge between the two stocks.
 
 ### Example
 <img src="https://github.com/dennis199441/cmsc5721-project/blob/master/example/example_3.png" width="50%" height="50%">
@@ -35,6 +37,5 @@ If the correlation coefficient between the two stocks is greater than the pre-de
 ## Application
 ### Portfolio selection
 
-### Community detection
 
 
