@@ -74,24 +74,6 @@ def node_color_list(G, color_map):
 		colors.append(color_map[node])
 	return colors
 
-def print_network_summary(graph):
-	print("number_of_nodes: {}".format(graph.number_of_nodes()))
-	print("number_of_edges: {}".format(graph.number_of_edges()))
-	
-	isolates = list(nx.isolates(graph))
-	print("number_of_isolates: {}".format(len(isolates)))
-
-	components = sorted(nx.connected_components(graph), key = len, reverse=True)
-	print("number_of_connected_components: {}".format(len(components)))
-	print("size_of_the_largest_component: {}".format(len(components[0])))
-
-	counter = 0
-	for component in components:
-		if(len(component) > 1):
-			counter += 1
-	print("number_of_connected_components (without isolates): {}".format(counter))
-	print()
-
 if __name__ == "__main__":
 
 	STOCK_MAP = get_stock_map(size=5000)
@@ -112,7 +94,7 @@ if __name__ == "__main__":
 	]
 
 	TIMESCALE = 6
-	THRESHOLD = 0.5
+	THRESHOLD = 0.6
 	FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month_' + str(THRESHOLD) + 'threshold/'
 	# FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month/'
 	PORTFOLIO_SIZE = 20
@@ -141,7 +123,7 @@ if __name__ == "__main__":
 			edges = list(STOCK_NETWORK.edges(data=True))
 
 			# draw_network_with_metadata(STOCK_MAP, NETWORK_NAME, STOCK_NETWORK)
-			selected_portfolio = Strategies.top_n_custom_page_rank(STOCK_NETWORK, PORTFOLIO_SIZE)
+			selected_portfolio = Strategies.top_n_return_risk_ratio(STOCK_NETWORK, PORTFOLIO_SIZE)
 			
 			print("=============================================================================================")
 			print("Stock Network: {}".format(NETWORK_NAME))
