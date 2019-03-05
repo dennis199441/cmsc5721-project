@@ -59,8 +59,6 @@ if __name__ == "__main__":
 			print("=============================================================================================")
 			print("Stock Network: {}".format(NETWORK_NAME))
 
-			STOCK_NETWORK = nx.gnp_random_graph(100, 0.02)
-
 			NUM_NODES.append(len(STOCK_NETWORK))
 			NUM_EDGES.append(STOCK_NETWORK.number_of_edges())
 			CLUSTERING_COEFFICIENT.append(average_clustering_coefficient(STOCK_NETWORK))

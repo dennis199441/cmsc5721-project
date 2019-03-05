@@ -1,4 +1,4 @@
-import os, math, pickle
+import os, math, pickle, argparse
 import networkx as nx
 import matplotlib
 matplotlib.use('TkAgg')
@@ -29,77 +29,27 @@ def draw_degree_distribution(graph):
 	plt.bar(x, y)
 	plt.title('Degree distribution')
 
-'''
-Draw the COPY of network. Reference of `graph` is not modified
-'''
-def draw_network_with_metadata(stock_map, network_name, graph, ignore_isolates=False):
-	temp = graph.copy()
-	if ignore_isolates:
-		to_be_removed = []
-		degrees = graph.degree()
-		for degree in degrees:
-			if degree[1] == 0:
-				to_be_removed.append(degree[0])
-		temp.remove_nodes_from(to_be_removed)
-
-	draw_network_with_metadata_helper(stock_map, network_name, temp)
-
-def draw_network_with_metadata_helper(stock_map, network_name, graph):
-	plt.figure()
-	plt.title(network_name.split('/')[-1])
-	color_map = metadata_node_color_map(graph, stock_map)
-	node_color = node_color_list(graph, color_map)
-	nx.draw(graph, node_color=node_color, node_size=100, with_labels=False, font_size=8)
-	plt.show()
-
-def metadata_node_color_map(graph, stock_map):
-	node_color_map = {}
-	nodes = list(graph.nodes(data=True))
-	for node in nodes:
-		stock = node[0]
-		performance = node[1]['performance']
-		if performance > 0:
-			node_color_map[stock] = 'g'
-		elif performance < 0:
-			node_color_map[stock] = 'r'
-		else:
-			node_color_map[stock] = 'y'
-
-	return node_color_map
-
-def node_color_list(G, color_map):
-	colors = []
-	nodes = G.nodes()
-	for node in nodes:
-		colors.append(color_map[node])
-	return colors
-
 if __name__ == "__main__":
 
-	STOCK_MAP = get_stock_map(size=5000)
-	INDEX_MAP = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
+	STOCK_MAP, DATES = get_stock_map(size=5000)
+	INDEX_MAP, DATES = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
 
-	DATES = [
-		'2014-01-24','2014-02-24','2014-03-24','2014-04-24','2014-05-24','2014-06-24',
-		'2014-07-24','2014-08-24','2014-09-24','2014-10-24','2014-11-24','2014-12-24',
-		'2015-01-24','2015-02-24','2015-03-24','2015-04-24','2015-05-24','2015-06-24',
-		'2015-07-24','2015-08-24','2015-09-24','2015-10-24','2015-11-24','2015-12-24',
-		'2016-01-24','2016-02-24','2016-03-24','2016-04-24','2016-05-24','2016-06-24',
-		'2016-07-24','2016-08-24','2016-09-24','2016-10-24','2016-11-24','2016-12-24',
-		'2017-01-24','2017-02-24','2017-03-24','2017-04-24','2017-05-24','2017-06-24',
-		'2017-07-24','2017-08-24','2017-09-24','2017-10-24','2017-11-24','2017-12-24',
-		'2018-01-24','2018-02-24','2018-03-24','2018-04-24','2018-05-24','2018-06-24',
-		'2018-07-24','2018-08-24','2018-09-24','2018-10-24','2018-11-24','2018-12-24',
-		'2019-01-24'
-	]
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--timescale', help="correlation timescale", type=int, default=250)
+	parser.add_argument('--threshold', help="corelation threshold for edges", type=float, default=0.6)
+	parser.add_argument('--input_folder', help="input folder name", type=str, default="network_data")
+	parser.add_argument('--portfolio_size', help="portfolio size", type=int, default=20)
+	parser.add_argument('--init_portfolio_val', help="initial portfolio value", type=int, default=100000)
+	
+	args = parser.parse_args()
+	
+	TIMESCALE = args.timescale
+	THRESHOLD = args.threshold
+	FOLDER_NAME =  args.input_folder + '/metadata_stocknet_timescale_' + str(TIMESCALE) + 'threshold_' + str(THRESHOLD) + '/'
 
-	TIMESCALE = 6
-	THRESHOLD = 0.6
-	FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month_' + str(THRESHOLD) + 'threshold/'
-	# FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month/'
-	PORTFOLIO_SIZE = 20
-	LAST_DAY = '2019-01-23'
-	INITIAL_PORTFOLIO_VALUE = 100000
+	PORTFOLIO_SIZE = args.portfolio_size
+	LAST_DAY = DATES[-1]
+	INITIAL_PORTFOLIO_VALUE = args.init_portfolio_val
 	
 	STOCK_PORTFOLIO = Portfolio(cash=INITIAL_PORTFOLIO_VALUE)
 	INDEX_PORTFOLIO = Portfolio(cash=INITIAL_PORTFOLIO_VALUE)
@@ -122,7 +72,6 @@ if __name__ == "__main__":
 			STOCK_NETWORK = pickle.load(pickle_in)
 			edges = list(STOCK_NETWORK.edges(data=True))
 
-			# draw_network_with_metadata(STOCK_MAP, NETWORK_NAME, STOCK_NETWORK)
 			selected_portfolio = Strategies.top_n_return_risk_ratio(STOCK_NETWORK, PORTFOLIO_SIZE)
 			
 			print("=============================================================================================")

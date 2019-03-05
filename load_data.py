@@ -1,5 +1,5 @@
 import concurrent.futures
-import csv, os, math, sys, re, bisect, pickle, statistics
+import csv, os, math, sys, re, bisect, pickle, statistics, random, argparse
 import networkx as nx
 import numpy as np
 from pytalib.graph import visibility_graph
@@ -40,15 +40,17 @@ def get_stock_map(data_path="sandp500_data", size=10, is_index=False):
 			data_map['date'] = dates
 			data_map['price'] = prices
 			data_map['volume'] = volumes
-			if not is_index:
+			if not is_index and name:
 				data_map['industry'] = industry_dict[name]
 				data_map['sector'] = sector_dict[name]
 			stock_map[name] = data_map
 			counter += 1
 
 	validate_stock_map(stock_map)
+	key, value = random.choice(list(stock_map.items()))
+	datelist = value['date'].copy()
 
-	return stock_map
+	return stock_map, datelist
 
 def validate_stock_map(stock_map):
 	invalids = []
@@ -145,9 +147,7 @@ def construct_stock_network(stock_map, from_date='2014-01-24', to_date='2019-01-
 		log_return_series = calculate_log_return(price_series)
 		mean_return = np.mean(log_return_series)
 		std_return = np.std(log_return_series)
-		performance = evaluate_performance(stock_map, node, from_date_index, to_date_index)
-
-		G.add_node(node, performance=performance, mean_return=mean_return, std_return=std_return)
+		G.add_node(node, price=price_series[-1], mean_return=mean_return, std_return=std_return)
 
 	for correlation in pearson_correlations:
 		pair = correlation[0]
@@ -166,29 +166,17 @@ def get_network_name(from_date, to_date):
 
 
 ## Global Variables
-STOCK_MAP = get_stock_map(size=5000)
+parser = argparse.ArgumentParser()
+parser.add_argument('--timescale', help="correlation timescale", type=int, default=250)
+parser.add_argument('--threshold', help="corelation threshold for edges", type=float, default=0.6)
+parser.add_argument('--output_folder', help="output folder name", type=str, default="network_data")
+args = parser.parse_args()
 
-DATES = [
-	'2014-01-24','2014-02-24','2014-03-24','2014-04-24','2014-05-24','2014-06-24',
-	'2014-07-24','2014-08-24','2014-09-24','2014-10-24','2014-11-24','2014-12-24',
-	'2015-01-24','2015-02-24','2015-03-24','2015-04-24','2015-05-24','2015-06-24',
-	'2015-07-24','2015-08-24','2015-09-24','2015-10-24','2015-11-24','2015-12-24',
-	'2016-01-24','2016-02-24','2016-03-24','2016-04-24','2016-05-24','2016-06-24',
-	'2016-07-24','2016-08-24','2016-09-24','2016-10-24','2016-11-24','2016-12-24',
-	'2017-01-24','2017-02-24','2017-03-24','2017-04-24','2017-05-24','2017-06-24',
-	'2017-07-24','2017-08-24','2017-09-24','2017-10-24','2017-11-24','2017-12-24',
-	'2018-01-24','2018-02-24','2018-03-24','2018-04-24','2018-05-24','2018-06-24',
-	'2018-07-24','2018-08-24','2018-09-24','2018-10-24','2018-11-24','2018-12-24',
-	'2019-01-24'
-]
-
-TIMESCALE = 6
-
-THRESHOLD = 0.5
-
-FOLDER_NAME = 'network_data/metadata_stocknet_' + str(TIMESCALE) + 'month_' + str(THRESHOLD) + 'threshold/'
-
-LAST_DAY = '2019-01-23'
+STOCK_MAP, DATES = get_stock_map(size=5000)
+LAST_DAY = DATES[-1]
+TIMESCALE = args.timescale
+THRESHOLD = args.threshold
+FOLDER_NAME =  args.output_folder + '/metadata_stocknet_timescale_' + str(TIMESCALE) + 'threshold_' + str(THRESHOLD) + '/'
 ## Global Variables
 
 def concurrent_procedure(index):
@@ -200,7 +188,6 @@ def concurrent_procedure(index):
 		os.makedirs(FOLDER_NAME)
 
 	if not os.path.exists('./' + NETWORK_NAME):
-		print("========================================================")
 		print("Start generate {}...".format(NETWORK_NAME))
 		STOCK_NETWORK = construct_stock_network(STOCK_MAP, from_date=FROM_DATE, to_date=TO_DATE, threshold=THRESHOLD, output_name=NETWORK_NAME)
 		print("Generate {} completed.".format(NETWORK_NAME))
