@@ -32,8 +32,7 @@ def sector_node_color_map(graph, stock_map):
 	node_color_map = {}
 	nodes = list(graph.nodes(data=True))
 	for node in nodes:
-		stock = node[0]
-		sector = stock_map[stock]['sector']
+		stock = node[0]		sector = stock_map[stock]['sector']
 		node_color_map[stock] = SECTOR_COLOR_MAP[sector]
 
 	return node_color_map

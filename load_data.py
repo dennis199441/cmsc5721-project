@@ -165,19 +165,7 @@ def get_network_name(from_date, to_date):
 	return 'stocknet_' + from_date.replace('-', '') + '_' + to_date.replace('-', '') + '.pickle'
 
 
-## Global Variables
-parser = argparse.ArgumentParser()
-parser.add_argument('--timescale', help="correlation timescale", type=int, default=250)
-parser.add_argument('--threshold', help="corelation threshold for edges", type=float, default=0.6)
-parser.add_argument('--output_folder', help="output folder name", type=str, default="network_data")
-args = parser.parse_args()
 
-STOCK_MAP, DATES = get_stock_map(size=5000)
-LAST_DAY = DATES[-1]
-TIMESCALE = args.timescale
-THRESHOLD = args.threshold
-FOLDER_NAME =  args.output_folder + '/metadata_stocknet_timescale_' + str(TIMESCALE) + 'threshold_' + str(THRESHOLD) + '/'
-## Global Variables
 
 def concurrent_procedure(index):
 	FROM_DATE = DATES[index]
@@ -193,6 +181,21 @@ def concurrent_procedure(index):
 		print("Generate {} completed.".format(NETWORK_NAME))
 
 if __name__ == "__main__":
+	
+	## Global Variables
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--timescale', help="correlation timescale", type=int, default=250)
+	parser.add_argument('--threshold', help="corelation threshold for edges", type=float, default=0.6)
+	parser.add_argument('--output_folder', help="output folder name", type=str, default="network_data")
+	args = parser.parse_args()
+
+	STOCK_MAP, DATES = get_stock_map(size=5000)
+	LAST_DAY = DATES[-1]
+	TIMESCALE = args.timescale
+	THRESHOLD = args.threshold
+	FOLDER_NAME =  args.output_folder + '/metadata_stocknet_timescale_' + str(TIMESCALE) + 'threshold_' + str(THRESHOLD) + '/'
+	## Global Variables
+
 	with concurrent.futures.ProcessPoolExecutor() as executor:
 		for STOCK_NETWORK in executor.map(concurrent_procedure, range(len(DATES) - TIMESCALE)):
 			pass

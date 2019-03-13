@@ -48,8 +48,13 @@ class Strategies(object):
 		return self.__normalize_portfolio_weight(portfolio)
 
 	@classmethod
-	def top_n_return_risk_ratio(self, G, n):
+	def top_n_sharp_ratio(self, G, n):
 		centralities = self.__return_risk_ratio(G)
+		return self.__construct_portfolio(n, centralities)
+
+	@classmethod
+	def top_n_return_rate(self, G, n):
+		centralities = self.__return_rate(G)
 		return self.__construct_portfolio(n, centralities)
 
 	@classmethod
@@ -115,6 +120,30 @@ class Strategies(object):
 
 		return centrality
 
+	@classmethod
+	def __return_rate(self, G):
+		if len(G) <= 1:
+			return {n: 1 for n in G}
+
+		s = 1.0 / (len(G) - 1.0)
+
+		centrality = {}
+		nodes = dict(G.nodes(data=True))
+		minimum = float('Inf')
+		maximum = -float('Inf')
+		for node in nodes.keys():
+			ratio = nodes[node]['mean_return']
+			if ratio < minimum:
+				minimum = ratio
+			if ratio > maximum:
+				maximum = ratio
+
+			centrality[node] = nodes[node]['mean_return']
+
+		for k, v in centrality.items():
+			centrality[k] = (v - minimum) / (maximum - minimum)
+
+		return centrality
 
 	@classmethod
 	def __meta_degree_centrality(self, G):
@@ -130,7 +159,8 @@ class Strategies(object):
 			neighbors = list(G.neighbors(node))
 			d = 0
 			for neighbor in neighbors:
-				d += nodes[neighbor]['performance']
+				sharpe_ratio = nodes[neighbor]['mean_return'] / nodes[neighbor]['std_return']
+				d += sharpe_ratio
 			centrality[node] = d * s
 
 		return centrality
@@ -145,8 +175,6 @@ class Strategies(object):
 	
 	@classmethod
 	def __normalize_portfolio_weight(self, portfolio):
-		print("before normalized_portfolio")
-		print(portfolio)
 		normalized_portfolio = []
 		normalized_metrics = []
 		
