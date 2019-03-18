@@ -2,3 +2,4 @@ env
 *.pyc
 *.adjlist
 *.pickle
+/network_data/*
