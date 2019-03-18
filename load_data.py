@@ -164,8 +164,8 @@ def construct_stock_network(stock_map, from_date='2014-01-24', to_date='2019-01-
 def get_network_name(from_date, to_date):
 	return 'stocknet_' + from_date.replace('-', '') + '_' + to_date.replace('-', '') + '.pickle'
 
-
-
+def get_embedding_foldername(from_date, to_date):
+	return 'unsup-stocknet_' + from_date.replace('-', '') + '_' + to_date.replace('-', '')
 
 def concurrent_procedure(index):
 	FROM_DATE = DATES[index]

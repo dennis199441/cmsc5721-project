@@ -1,4 +1,5 @@
 import networkx as nx
+import numpy as np
 import random
 
 class Strategies(object):
@@ -61,6 +62,28 @@ class Strategies(object):
 	def top_n_custom_page_rank(self, G, n):
 		centralities = self.__custom_page_rank(G)
 		return self.__construct_portfolio(n, centralities)
+
+	@classmethod
+	def kmeans_highest_return(self, G, n, embedding_matrix, embedding_list):
+		if embedding_matrix is None or embedding_list is None:
+			return []
+
+		portfolio = []
+		nodes = dict(G.nodes(data=True))
+		from sklearn.cluster import KMeans
+		result = KMeans(n_clusters=n, random_state=0).fit(embedding_matrix)
+		labels = result.labels_
+		clusters = [[] for i in range(n)]
+		for i in range(len(labels)):
+			symbol = embedding_list[i]
+			cluster = labels[i]
+			clusters[cluster].append((symbol, nodes[symbol]['mean_return']))
+
+		for cluster in clusters:
+			sorted_cluster = sorted(cluster, key=lambda x: x[1], reverse=True)
+			portfolio.append(sorted_cluster[0])
+
+		return self.__normalize_portfolio_weight(portfolio)
 
 	'''
 	Private methods
@@ -175,6 +198,9 @@ class Strategies(object):
 	
 	@classmethod
 	def __normalize_portfolio_weight(self, portfolio):
+		'''
+		Only works with positive metrics (> 0)
+		'''
 		normalized_portfolio = []
 		normalized_metrics = []
 		
