@@ -85,6 +85,51 @@ class Strategies(object):
 
 		return self.__normalize_portfolio_weight(portfolio)
 
+	@classmethod
+	def kmeans_highest_sharpe(self, G, n, embedding_matrix, embedding_list):
+		if embedding_matrix is None or embedding_list is None:
+			return []
+
+		portfolio = []
+		nodes = dict(G.nodes(data=True))
+		from sklearn.cluster import KMeans
+		result = KMeans(n_clusters=n, random_state=0).fit(embedding_matrix)
+		labels = result.labels_
+		clusters = [[] for i in range(n)]
+		for i in range(len(labels)):
+			symbol = embedding_list[i]
+			cluster = labels[i]
+			sharpe_ratio = nodes[symbol]['mean_return'] / nodes[symbol]['std_return']
+			clusters[cluster].append((symbol, sharpe_ratio))
+
+		for cluster in clusters:
+			sorted_cluster = sorted(cluster, key=lambda x: x[1], reverse=True)
+			portfolio.append(sorted_cluster[0])
+
+		return self.__normalize_portfolio_weight(portfolio)
+
+	@classmethod
+	def kmeans_lowest_std(self, G, n, embedding_matrix, embedding_list):
+		if embedding_matrix is None or embedding_list is None:
+			return []
+
+		portfolio = []
+		nodes = dict(G.nodes(data=True))
+		from sklearn.cluster import KMeans
+		result = KMeans(n_clusters=n, random_state=0).fit(embedding_matrix)
+		labels = result.labels_
+		clusters = [[] for i in range(n)]
+		for i in range(len(labels)):
+			symbol = embedding_list[i]
+			cluster = labels[i]
+			clusters[cluster].append((symbol, nodes[symbol]['std_return']))
+
+		for cluster in clusters:
+			sorted_cluster = sorted(cluster, key=lambda x: x[1], reverse=False)
+			portfolio.append(sorted_cluster[0])
+
+		return self.__normalize_portfolio_weight(portfolio)
+
 	'''
 	Private methods
 	'''

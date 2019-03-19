@@ -101,57 +101,57 @@ if __name__ == "__main__":
 		if SELL_DATE == '2019-01-24':
 			SELL_DATE = LAST_DAY
 
-		# try:
-		if os.path.exists('./' + NETWORK_NAME):
-			pickle_in = open(NETWORK_NAME, "rb")
-			STOCK_NETWORK = pickle.load(pickle_in)
+		try:
+			if os.path.exists('./' + NETWORK_NAME):
+				pickle_in = open(NETWORK_NAME, "rb")
+				STOCK_NETWORK = pickle.load(pickle_in)
 
-			# selected_portfolio = Strategies.top_n_return_rate(STOCK_NETWORK, PORTFOLIO_SIZE)
-			selected_portfolio = Strategies.fixed_size_kmeans_highest_return(STOCK_NETWORK, PORTFOLIO_SIZE, embedding_matrix, embedding_list)
+				# selected_portfolio = Strategies.top_n_return_rate(STOCK_NETWORK, PORTFOLIO_SIZE)
+				selected_portfolio = Strategies.kmeans_lowest_std(STOCK_NETWORK, PORTFOLIO_SIZE, embedding_matrix, embedding_list)
 
-			print("=============================================================================================")
-			print("Stock Network: {}".format(NETWORK_NAME))
-			print("\nselected_portfolio: ", selected_portfolio)
-			print("\nBuy at: {}, Sell at {}".format(BUY_DATE, SELL_DATE))
-			print("\nCurrent cash: {}".format(STOCK_PORTFOLIO.cash))
-			print("number of node: {}".format(len(STOCK_NETWORK)))
-			## Buy assets
-			for asset in selected_portfolio:
-				stock = asset[0]
-				weight = asset[1]
-				date_index = get_date_index(STOCK_MAP, stock, BUY_DATE)
-				price = STOCK_MAP[stock]['price'][date_index]
-				STOCK_PORTFOLIO.buy(stock, price, weight)
+				print("=============================================================================================")
+				print("Stock Network: {}".format(NETWORK_NAME))
+				print("\nselected_portfolio: ", selected_portfolio)
+				print("\nBuy at: {}, Sell at {}".format(BUY_DATE, SELL_DATE))
+				print("\nCurrent cash: {}".format(STOCK_PORTFOLIO.cash))
+				print("number of node: {}".format(len(STOCK_NETWORK)))
+				## Buy assets
+				for asset in selected_portfolio:
+					stock = asset[0]
+					weight = asset[1]
+					date_index = get_date_index(STOCK_MAP, stock, BUY_DATE)
+					price = STOCK_MAP[stock]['price'][date_index]
+					STOCK_PORTFOLIO.buy(stock, price, weight)
 
-			## Sell assets
-			for asset in selected_portfolio:
-				stock = asset[0]
-				date_index = get_date_index(STOCK_MAP, stock, SELL_DATE)
-				price = STOCK_MAP[stock]['price'][date_index]
-				STOCK_PORTFOLIO.sell(stock, price)
+				## Sell assets
+				for asset in selected_portfolio:
+					stock = asset[0]
+					date_index = get_date_index(STOCK_MAP, stock, SELL_DATE)
+					price = STOCK_MAP[stock]['price'][date_index]
+					STOCK_PORTFOLIO.sell(stock, price)
 
-			PORTFOLIO_VALUE.append(STOCK_PORTFOLIO.cash)
+				PORTFOLIO_VALUE.append(STOCK_PORTFOLIO.cash)
 
-			## Buy assets
-			_index_portfolio = [('SPY', 1)]
-			for asset in _index_portfolio:
-				stock = asset[0]
-				weight = asset[1]
-				date_index = get_date_index(INDEX_MAP, stock, BUY_DATE)
-				price = INDEX_MAP[stock]['price'][date_index]
-				INDEX_PORTFOLIO.buy(stock, price, weight)
+				## Buy assets
+				_index_portfolio = [('SPY', 1)]
+				for asset in _index_portfolio:
+					stock = asset[0]
+					weight = asset[1]
+					date_index = get_date_index(INDEX_MAP, stock, BUY_DATE)
+					price = INDEX_MAP[stock]['price'][date_index]
+					INDEX_PORTFOLIO.buy(stock, price, weight)
 
-			## Sell assets
-			for asset in _index_portfolio:
-				stock = asset[0]
-				date_index = get_date_index(INDEX_MAP, stock, SELL_DATE)
-				price = INDEX_MAP[stock]['price'][date_index]
-				INDEX_PORTFOLIO.sell(stock, price)
-				INDEX_PRICE.append(price)
+				## Sell assets
+				for asset in _index_portfolio:
+					stock = asset[0]
+					date_index = get_date_index(INDEX_MAP, stock, SELL_DATE)
+					price = INDEX_MAP[stock]['price'][date_index]
+					INDEX_PORTFOLIO.sell(stock, price)
+					INDEX_PRICE.append(price)
 
-			INDEX_PORTFOLIO_VALUE.append(INDEX_PORTFOLIO.cash)
-		# except:
-		# 	print("[ERROR] NETWORK_NAME: {}".format(NETWORK_NAME))
+				INDEX_PORTFOLIO_VALUE.append(INDEX_PORTFOLIO.cash)
+		except:
+			print("[ERROR] NETWORK_NAME: {}".format(NETWORK_NAME))
 	
 	print("=============================================================================================")
 	plt.title("Portfolio value")

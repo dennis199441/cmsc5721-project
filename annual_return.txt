@@ -1,5 +1,6 @@
 Annual Return
 
+Return-based strategy
 Portfolio size: 5
 n2v: 			0.11984521718980501
 graphsage_mean: 0.10867450948119539
