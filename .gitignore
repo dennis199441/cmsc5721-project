@@ -3,3 +3,4 @@ env
 *.adjlist
 *.pickle
 /network_data/*
+.vscode/*
