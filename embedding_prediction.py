@@ -12,8 +12,10 @@ import numpy as np
 '''
 Task 1: Given the historical graph embedding matrices, predict the next graph embedding matrix
 
-python3 embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6' --embedding 'gcn' --n_prev 30
+python3 embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6' --embedding 'gcn' --n_prev 30 --batch_size 200
 
+
+python embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder C:/Users/cwxxcheun/Desktop/Other/github/cmsc5721-project/network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6 --embedding gcn --n_prev 30  --batch_size 200
 '''
 
 def load_pickle(args):
@@ -23,9 +25,11 @@ def load_pickle(args):
 	EMBEDDING = args.embedding
 	EMBEDDING_MATRICES = None
 	target_file = FOLDER_NAME + 'embedding_matrices_' + EMBEDDING + '.pickle'
-	if os.path.exists('./' + target_file):
+	if os.path.exists(target_file):
 		pickle_in = open(target_file, "rb")
 		EMBEDDING_MATRICES = pickle.load(pickle_in)
+	else:
+		print(target_file + 'not exists')
 
 	return EMBEDDING_MATRICES
 
@@ -43,7 +47,7 @@ def _load_data(data, n_prev=2):
 	'''
 	docX, docY = [], []
 	for i in range(len(data) - n_prev):
-		msg = "Loading data %i of %i" % (i, len(data) - n_prev)
+		msg = "Loading data %i of %i" % (i, len(data) - 1 - n_prev)
 		sys.stdout.write(msg + chr(8) * len(msg))
 		sys.stdout.flush()		
 		docX.append(np.array(data[i:i + n_prev]))
@@ -67,19 +71,23 @@ if __name__ == '__main__':
 	parser.add_argument('--input_folder', help="input folder name", type=str, default="network_data")
 	parser.add_argument('--embedding', help="embedding algorithm", type=str, default=None)
 	parser.add_argument('--n_prev', help="sliding window size", type=int, default=30)
+	parser.add_argument('--batch_size', help="batch size", type=int, default=100)
 
 	args = parser.parse_args()
 	data = load_pickle(args)
 	reshape_matrices(data)
 	n_prev = args.n_prev
+	batch_size = args.batch_size
 
 	(X_train, y_train), (X_test, y_test) = train_test_split(data, test_size=0.25, n_prev=n_prev)
 
 	in_out_neurons = 117760
-	hidden_neurons = 500
-
+	hidden_neurons = 5000
+	hidden_neurons_2 = 500
 	model = Sequential()
-	model.add(LSTM(hidden_neurons, return_sequences=False, input_shape=(2, in_out_neurons)))
+	model.add(LSTM(hidden_neurons, return_sequences=True, input_shape=(n_prev, in_out_neurons)))
+	model.add(LSTM(hidden_neurons_2, return_sequences=True, input_shape=(n_prev, hidden_neurons)))
+	model.add(LSTM(hidden_neurons, return_sequences=False, input_shape=(n_prev, hidden_neurons_2)))
 	model.add(Dense(in_out_neurons, input_dim=hidden_neurons))  
 	model.add(Activation("linear"))  
 	model.compile(loss="mean_squared_error", optimizer="rmsprop", metrics=["accuracy", 'mae', 'mape', 'mse'])
@@ -88,9 +96,9 @@ if __name__ == '__main__':
 	# and now train the model
 	# batch_size should be appropriate to your memory size
 	# number of epochs should be higher for real world problems
-	model.fit(X_train, y_train, batch_size=10, epochs=10, validation_split=0.25) 
+	model.fit(X_train, y_train, batch_size=batch_size, epochs=10, validation_split=0.25) 
 	predicted = model.predict(X_test) 
-	score = model.evaluate(X_test, y_test, batch_size=470)
+	score = model.evaluate(X_test, y_test, batch_size=batch_size*0.5)
 
 	print("loss, accuracy, mae, mape, mse == {}".format(score))
 	print("len(y_test): {}".format(len(y_test)))
@@ -100,9 +108,6 @@ if __name__ == '__main__':
 
 	score2 = np.sqrt(np.mean(np.square(predicted - y_test)))
 	print ("score 2 == {}".format(score2))
-
-	plt.plot(score2)
-	plt.show()
 
 	# and maybe plot it
 	# plt.plot(pd.DataFrame(predicted[:20])) 
