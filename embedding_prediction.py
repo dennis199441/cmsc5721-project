@@ -1,15 +1,8 @@
-from keras.models import Sequential
-from keras.layers.core import Dense, Activation
-from keras.layers.recurrent import LSTM
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-import pandas as pd
-from random import random
-import os, pickle, argparse, sys
+import argparse
 import numpy as np
 from data_preprocessing import load_minibatch
 from load_data import get_stock_map
+from models import *
 
 '''
 Task 1: Given the historical graph embedding matrices, predict the next graph embedding matrix
@@ -97,11 +90,6 @@ if __name__ == '__main__':
 	parser.add_argument('--batch_size', help="batch size", type=int, default=100)
 
 	args = parser.parse_args()
-	
-	# data = load_pickle(args)
-	# reshape_matrices(data)
-	data = np.array([np.array([random()*i, random()*i]) for i in range(1000)])
-
 	'''
 	Read Embedding file by file, instead of loading all embeddings into memory!!!
 	Read file should be done in generate_arrays_from_matrices()
@@ -117,24 +105,19 @@ if __name__ == '__main__':
 	fit_output = {}
 	predict_output = {}
 	evaluate_output = {}
-	
+
 	n_prev = args.n_prev
 	batch_size = args.batch_size
 
 	in_out_neurons = 117760
 	hidden_neurons = 500
 
-	model = Sequential()
-	model.add(LSTM(hidden_neurons, return_sequences=True, input_shape=(n_prev, in_out_neurons)))
-	model.add(LSTM(hidden_neurons, return_sequences=False, input_shape=(n_prev, hidden_neurons)))
-	model.add(Dense(in_out_neurons, input_dim=hidden_neurons))  
-	model.add(Activation("sigmoid"))  
-	model.compile(loss="mean_squared_error", optimizer="adam", metrics=["accuracy", 'mae', 'mape', 'mse'])
+	model = lstm_vector(n_prev, in_out_neurons, hidden_neurons)
 
-	model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=100, epochs=5)
+	history = model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=20, epochs=5)
 	predicted = model.predict_generator(generate_minibatch_predict(params, n_prev=n_prev, output=predict_output), steps=n_prev) 
 	score = model.evaluate_generator(generate_minibatch_evaluate(params, n_prev=n_prev, output=evaluate_output), steps=n_prev)
 
-	print("loss, accuracy, mae, mape, mse == {}".format(score))
+	print("loss, mae, mape, mse == {}".format(score))
 	
 

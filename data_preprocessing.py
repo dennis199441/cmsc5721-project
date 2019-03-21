@@ -8,7 +8,7 @@ from load_data import get_stock_map, get_embedding_foldername
 python3 data_preprocessing.py --timescale 250 --threshold 0.6 --input_folder './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6' --embedding 'gcn'
 
 '''
-def get_sorted_embedding(folder, embedding, from_date, to_date, order):
+def get_sorted_embedding(folder, embedding, from_date, to_date, order, flatten=True):
 	embedding_base = folder + '/logs/' + get_embedding_foldername(from_date, to_date)
 	embedding_npy = None
 	embedding_txt = None
@@ -45,11 +45,13 @@ def get_sorted_embedding(folder, embedding, from_date, to_date, order):
 		temp_array = np.zeros(shape=embedding_matrix.shape)
 		for i in range(len(order)):
 			temp_array[i] = embedding_matrix[symbol_order[order[i]]]
-		temp_array = temp_array.reshape(-1,)
+
+		if flatten:
+			temp_array = temp_array.reshape(-1,)
 
 		return temp_array, order
 
-def load_minibatch(params, index, embedding, n_prev=2, output={}):
+def load_minibatch(params, index, embedding, n_prev=2, output={}, flatten=True):
 	dates = params['dates']
 	timescale = params['timescale']
 	threshold = params['threshold']
@@ -66,7 +68,7 @@ def load_minibatch(params, index, embedding, n_prev=2, output={}):
 		for index in range(index, len(dates) - timescale -1):
 			from_date = dates[index]
 			to_date = dates[index + timescale]
-			temp_array, order = get_sorted_embedding(folder, embedding, from_date, to_date, order)
+			temp_array, order = get_sorted_embedding(folder, embedding, from_date, to_date, order, flatten)
 			if len(minibatch_X) < n_prev:
 				minibatch_X.append(temp_array)
 				continue
@@ -85,13 +87,13 @@ def load_minibatch(params, index, embedding, n_prev=2, output={}):
 
 		from_date = dates[index + n_prev - 1]
 		to_date = dates[index + n_prev - 1 + timescale]
-		temp_array_X, order = get_sorted_embedding(folder, embedding, from_date, to_date, order)
+		temp_array_X, order = get_sorted_embedding(folder, embedding, from_date, to_date, order, flatten)
 		minibatch_X.append(temp_array_X)
 		output['minibatch_X'] = minibatch_X
 
 		from_date = dates[index + n_prev]
 		to_date = dates[index + n_prev + timescale]
-		temp_array_y, order = get_sorted_embedding(folder, embedding, from_date, to_date, order)
+		temp_array_y, order = get_sorted_embedding(folder, embedding, from_date, to_date, order, flatten)
 		minibatch_y.append(temp_array_y)
 		output['minibatch_y'] = minibatch_y
 		return output
