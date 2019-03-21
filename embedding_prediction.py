@@ -8,6 +8,8 @@ import pandas as pd
 from random import random
 import os, pickle, argparse, sys
 import numpy as np
+from data_preprocessing import load_minibatch
+from load_data import get_stock_map
 
 '''
 Task 1: Given the historical graph embedding matrices, predict the next graph embedding matrix
@@ -17,6 +19,45 @@ python3 embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder '
 
 python embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder C:/Users/cwxxcheun/Desktop/Other/github/cmsc5721-project/network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6 --embedding gcn --n_prev 30  --batch_size 200
 '''
+def generate_minibatch_fit(params, n_prev=2, test_size=0.25, output={}):
+	order = []
+	embedding = params['embedding']
+	data_size = len(params['dates'])
+	ntrn = round(data_size * (1 - test_size))
+	while True:
+		for index in range(ntrn - n_prev):
+			output = load_minibatch(params, index, embedding, n_prev=n_prev, output=output)
+			minibatch_X = output['minibatch_X']
+			minibatch_y = output['minibatch_y']
+			X = np.array([minibatch_X])
+			y = np.array(minibatch_y)
+			yield (X, y)
+
+def generate_minibatch_evaluate(params, n_prev=2, test_size=0.25, output={}):
+	order = []
+	embedding = params['embedding']
+	data_size = len(params['dates'])
+	ntrn = round(data_size * (1 - test_size))
+	while True:
+		for index in range(ntrn ,data_size - n_prev):		
+			output = load_minibatch(params, index, embedding, n_prev=n_prev, output=output)
+			minibatch_X = output['minibatch_X']
+			minibatch_y = output['minibatch_y']
+			X = np.array([minibatch_X])
+			y = np.array(minibatch_y)
+			yield (X, y)
+
+def generate_minibatch_predict(params, n_prev=2, test_size=0.25, output={}):
+	order = []
+	embedding = params['embedding']
+	data_size = len(params['dates'])
+	ntrn = round(data_size * (1 - test_size))
+	while True:
+		for index in range(ntrn ,data_size - n_prev):		
+			output = load_minibatch(params, index, embedding, n_prev=n_prev, output=output)
+			minibatch_X = output['minibatch_X']
+			X = np.array([minibatch_X])
+			yield (X)
 
 def generate_arrays_from_matrices(data, n_prev=2):
 	while True:
@@ -65,12 +106,24 @@ if __name__ == '__main__':
 	Read Embedding file by file, instead of loading all embeddings into memory!!!
 	Read file should be done in generate_arrays_from_matrices()
 	'''
+	_, dates = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
+	params = {}
+	params['dates'] = dates
+	params['timescale'] = args.timescale
+	params['threshold'] = args.threshold
+	params['input_folder'] = args.input_folder
+	params['embedding'] = args.embedding
 
+	fit_output = {}
+	predict_output = {}
+	evaluate_output = {}
+	
 	n_prev = args.n_prev
 	batch_size = args.batch_size
 
-	in_out_neurons = 2 ## 460 * 256
-	hidden_neurons = 50
+	in_out_neurons = 117760
+	hidden_neurons = 500
+
 	model = Sequential()
 	model.add(LSTM(hidden_neurons, return_sequences=True, input_shape=(n_prev, in_out_neurons)))
 	model.add(LSTM(hidden_neurons, return_sequences=False, input_shape=(n_prev, hidden_neurons)))
@@ -78,9 +131,9 @@ if __name__ == '__main__':
 	model.add(Activation("sigmoid"))  
 	model.compile(loss="mean_squared_error", optimizer="adam", metrics=["accuracy", 'mae', 'mape', 'mse'])
 
-	model.fit_generator(generate_arrays_from_matrices(get_train_data(data), n_prev),steps_per_epoch=100, epochs=5)
-	predicted = model.predict_generator(generate_test_data_from_matrices(get_test_data(data), n_prev), steps=n_prev) 
-	score = model.evaluate_generator(generate_arrays_from_matrices(get_test_data(data), n_prev), steps=n_prev)
+	model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=100, epochs=5)
+	predicted = model.predict_generator(generate_minibatch_predict(params, n_prev=n_prev, output=predict_output), steps=n_prev) 
+	score = model.evaluate_generator(generate_minibatch_evaluate(params, n_prev=n_prev, output=evaluate_output), steps=n_prev)
 
 	print("loss, accuracy, mae, mape, mse == {}".format(score))
 	
