@@ -42,15 +42,20 @@ def get_sorted_embedding(folder, embedding, from_date, to_date, order, flatten=T
 			symbol_order[symbol] = i
 			i += 1
 
-		temp_array = np.zeros(shape=embedding_matrix.shape)
+		_1d_array = np.zeros(shape=embedding_matrix.shape)
 		for i in range(len(order)):
-			temp_array[i] = embedding_matrix[symbol_order[order[i]]]
+			_1d_array[i] = embedding_matrix[symbol_order[order[i]]]
 
+		_2d_array = np.zeros(shape=(embedding_matrix.shape[0], embedding_matrix.shape[1], 1))
+		for i in range(_1d_array.shape[0]):
+			for j in range(_1d_array.shape[1]):
+				_2d_array[i][j] = [_1d_array[i][j]]
+	
 		if flatten:
-			temp_array = temp_array.reshape(-1,)
-			return temp_array, order
+			_1d_array = _1d_array.reshape(-1,)
+			return _1d_array, order
 
-		return [temp_array], order
+		return _2d_array, order
 
 def load_minibatch(params, index, embedding, n_prev=2, output={}, flatten=True):
 	dates = params['dates']
@@ -173,21 +178,21 @@ if __name__ == '__main__':
 	params['threshold'] = 0.5
 	params['input_folder'] = './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6'
 	output = {}
-	output = load_minibatch(params, 0, 'gcn', n_prev=5, output=output)
+	output = load_minibatch(params, 0, 'gcn', n_prev=5, output=output, flatten=False)
 
 	minibatch_X = output['minibatch_X']
 	minibatch_y = output['minibatch_y']
 	order = output['order']
 	print()
-	print(minibatch_X)
-	print(minibatch_y)
+	print(np.array(minibatch_X).shape)
+	print(np.array(minibatch_y).shape)
 
-	output = load_minibatch(params, 1, 'gcn', n_prev=5, output=output)
+	output = load_minibatch(params, 1, 'gcn', n_prev=5, output=output, flatten=False)
 
 	minibatch_X = output['minibatch_X']
 	minibatch_y = output['minibatch_y']
 	order = output['order']
 	
 	print()
-	print(minibatch_X)
-	print(minibatch_y)
+	print(np.array([minibatch_X]).shape)
+	print(np.array([minibatch_y]).shape)
