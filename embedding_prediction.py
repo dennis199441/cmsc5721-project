@@ -119,7 +119,6 @@ if __name__ == '__main__':
 	evaluate_output = {}
 
 	n_prev = args.n_prev
-	batch_size = args.batch_size
 
 	in_out_neurons = 117760
 	hidden_neurons = 500
