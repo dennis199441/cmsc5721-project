@@ -17,7 +17,7 @@ def lstm_vector(n_prev, in_out_neurons, hidden_neurons):
 
 def ConvLSTM2D_matrix(n_prev, in_out_neurons, hidden_neurons):
 	name = 'ConvLSTM2D_n_prev_{}_hidden_neurons_{}'.format(n_prev, hidden_neurons)
-	input_shape = (1, n_prev, 460, 256)
+	input_shape = (n_prev, 460, 256, 1)
 	kernel_size = (3, 3)	
 
 	model = Sequential()
