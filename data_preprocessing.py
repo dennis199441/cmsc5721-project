@@ -49,7 +49,7 @@ def get_sorted_embedding(folder, embedding, from_date, to_date, order, flatten=T
 		if flatten:
 			temp_array = temp_array.reshape(-1,)
 
-		return temp_array, order
+		return temp_array[:100], order
 
 def load_minibatch(params, index, embedding, n_prev=2, output={}, flatten=True):
 	dates = params['dates']
@@ -170,7 +170,7 @@ if __name__ == '__main__':
 	params['dates'] = dates
 	params['timescale'] = 250
 	params['threshold'] = 0.5
-	params['input_folder'] = 'C:/Users/cwxxcheun/Desktop/Other/github/cmsc5721-project/network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6'
+	params['input_folder'] = './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6'
 	output = {}
 	output = load_minibatch(params, 0, 'gcn', n_prev=5, output=output)
 
