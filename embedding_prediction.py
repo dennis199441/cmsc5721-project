@@ -85,11 +85,11 @@ def save_model(model, history, name):
 	history_name = './{}.pickle'.format(name + '_history')
 	pickle_model = open(model_name, 'wb')
 	pickle.dump(model, pickle_model)
+	pickle_model.close()
 
 	pickle_history = open(history_name, 'wb')
 	pickle.dump(model, pickle_history)
-
-	pickle_out.close()
+	pickle_history.close()
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
@@ -120,7 +120,7 @@ if __name__ == '__main__':
 
 	n_prev = args.n_prev
 
-	in_out_neurons = 117760
+	in_out_neurons = 100
 	hidden_neurons = 500
 
 	model, name = lstm_vector(n_prev, in_out_neurons, hidden_neurons)
