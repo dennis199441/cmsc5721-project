@@ -196,3 +196,4 @@ if __name__ == '__main__':
 	print()
 	print(np.array([minibatch_X]).shape)
 	print(np.array([minibatch_y]).shape)
+	print(np.array([minibatch_y])[0].shape)
