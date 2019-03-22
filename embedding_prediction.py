@@ -1,4 +1,4 @@
-import argparse
+import argparse, pickle
 import numpy as np
 from data_preprocessing import load_minibatch
 from load_data import get_stock_map
@@ -80,6 +80,17 @@ def get_test_data(data, test_size=0.25):
 	ntrn = round(len(data) * (1 - test_size))
 	return data[ntrn:]
 
+def save_model(model, history, name):
+	model_name = './{}.pickle'.format(name)
+	history_name = './{}.pickle'.format(name + '_history')
+	pickle_model = open(model_name, 'wb')
+	pickle.dump(model, pickle_model)
+
+	pickle_history = open(history_name, 'wb')
+	pickle.dump(model, pickle_history)
+
+	pickle_out.close()
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--timescale', help="correlation timescale", type=int, default=250)
@@ -112,11 +123,13 @@ if __name__ == '__main__':
 	in_out_neurons = 117760
 	hidden_neurons = 500
 
-	model = lstm_vector(n_prev, in_out_neurons, hidden_neurons)
+	model, name = lstm_vector(n_prev, in_out_neurons, hidden_neurons)
 
 	history = model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=20, epochs=5)
 	predicted = model.predict_generator(generate_minibatch_predict(params, n_prev=n_prev, output=predict_output), steps=n_prev) 
 	score = model.evaluate_generator(generate_minibatch_evaluate(params, n_prev=n_prev, output=evaluate_output), steps=n_prev)
+	
+	save_model(model, history, name)
 
 	print("loss, mae, mape, mse == {}".format(score))
 	

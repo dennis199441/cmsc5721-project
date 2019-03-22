@@ -13,15 +13,17 @@ python3 embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder '
 python embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder C:/Users/cwxxcheun/Desktop/Other/github/cmsc5721-project/network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6 --embedding gcn --n_prev 30  --batch_size 200
 '''
 def lstm_vector(n_prev, in_out_neurons, hidden_neurons):
+	name = 'LSTM_n_prev_{}_hidden_neurons_{}'.format(n_prev, hidden_neurons)
 	model = Sequential()
 	model.add(LSTM(hidden_neurons, return_sequences=True, input_shape=(n_prev, in_out_neurons)))
 	model.add(LSTM(hidden_neurons, return_sequences=False, input_shape=(n_prev, hidden_neurons)))
 	model.add(Dense(in_out_neurons, input_dim=hidden_neurons))  
 	model.add(Activation("sigmoid"))  
 	model.compile(loss="mean_squared_error", optimizer="adam", metrics=['mae', 'mape', 'mse'])
-	return model
+	return model, name
 
 def ConvLSTM2D_matrix(n_prev, in_out_neurons, hidden_neurons):
+	name = 'ConvLSTM2D_n_prev_{}_hidden_neurons_{}'.format(n_prev, hidden_neurons)
 	input_shape = (None, 460, 256, 1)
 	kernel_size = (3, 3)	
 
@@ -38,4 +40,4 @@ def ConvLSTM2D_matrix(n_prev, in_out_neurons, hidden_neurons):
 
 	model.compile(loss='mean_squared_error', optimizer='adam')
 
-	return model
+	return model, name
