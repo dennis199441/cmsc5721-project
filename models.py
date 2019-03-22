@@ -2,6 +2,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 from keras.layers.normalization import BatchNormalization
 from keras.layers.recurrent import LSTM
+from keras.layers.convolutional import Conv2D
 from keras.layers.convolutional_recurrent import ConvLSTM2D
 
 def lstm_vector(n_prev, in_out_neurons, hidden_neurons):
