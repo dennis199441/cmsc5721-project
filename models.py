@@ -2,7 +2,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 from keras.layers.normalization import BatchNormalization
 from keras.layers.recurrent import LSTM
-from keras.layers.convolutional import Conv2D
+from keras.layers.convolutional import Conv3D
 from keras.layers.convolutional_recurrent import ConvLSTM2D
 
 def lstm_vector(n_prev, in_out_neurons, hidden_neurons):
@@ -29,7 +29,7 @@ def ConvLSTM2D_matrix(n_prev, in_out_neurons, hidden_neurons):
 	model.add(BatchNormalization())
 	model.add(ConvLSTM2D(filters=40, kernel_size=kernel_size,padding='same', return_sequences=True))
 	model.add(BatchNormalization())
-	model.add(Conv2D(filters=1, kernel_size=kernel_size, activation='sigmoid', padding='same', data_format='channels_last'))
+	model.add(Conv3D(filters=1, kernel_size=(3,3,3), activation='sigmoid', padding='same', data_format='channels_last'))
 
 	model.compile(loss='mean_squared_error', optimizer='adam')
 
