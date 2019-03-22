@@ -7,10 +7,10 @@ from models import *
 '''
 Task 1: Given the historical graph embedding matrices, predict the next graph embedding matrix
 
-python3 embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6' --embedding 'gcn' --n_prev 30 --batch_size 200
+python3 embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder $DATA_PATH --embedding 'gcn' --n_prev 30 --steps_per_epoch 1000 --epochs 20
 
+python embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder C:/data_path --embedding gcn --n_prev 30  --steps_per_epoch 1000 --epochs 20
 
-python embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder C:/Users/cwxxcheun/Desktop/Other/github/cmsc5721-project/network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6 --embedding gcn --n_prev 30  --batch_size 200
 '''
 def generate_minibatch_fit(params, n_prev=2, test_size=0.25, output={}):
 	order = []
@@ -98,7 +98,8 @@ if __name__ == '__main__':
 	parser.add_argument('--input_folder', help="input folder name", type=str, default="network_data")
 	parser.add_argument('--embedding', help="embedding algorithm", type=str, default=None)
 	parser.add_argument('--n_prev', help="sliding window size", type=int, default=30)
-	parser.add_argument('--batch_size', help="batch size", type=int, default=100)
+	parser.add_argument('--steps_per_epoch', help="steps per epoch", type=int, default=1000)
+	parser.add_argument('--epochs', help="epochs", type=int, default=20)
 
 	args = parser.parse_args()
 	'''
@@ -125,7 +126,7 @@ if __name__ == '__main__':
 
 	model, name = lstm_vector(n_prev, in_out_neurons, hidden_neurons)
 
-	history = model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=20, epochs=5)
+	history = model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=args.steps_per_epoch, epochs=args.epochs)
 	predicted = model.predict_generator(generate_minibatch_predict(params, n_prev=n_prev, output=predict_output), steps=n_prev) 
 	score = model.evaluate_generator(generate_minibatch_evaluate(params, n_prev=n_prev, output=evaluate_output), steps=n_prev)
 	
