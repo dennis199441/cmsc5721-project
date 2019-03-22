@@ -44,13 +44,15 @@ def get_sorted_embedding(folder, embedding, from_date, to_date, order, flatten=T
 
 		temp_array = np.zeros(shape=embedding_matrix.shape)
 		for i in range(len(order)):
-			temp_array[i] = embedding_matrix[symbol_order[order[i]]]
+			if flatten:
+				temp_array[i] = embedding_matrix[symbol_order[order[i]]]
+			else:
+				temp_array[i] = [embedding_matrix[symbol_order[order[i]]]]
 
 		if flatten:
 			temp_array = temp_array.reshape(-1,)
-			return temp_array, order
 
-		return [temp_array], order
+		return temp_array, order
 
 def load_minibatch(params, index, embedding, n_prev=2, output={}, flatten=True):
 	dates = params['dates']
