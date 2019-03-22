@@ -19,7 +19,7 @@ def generate_minibatch_fit(params, n_prev=2, test_size=0.25, output={}):
 	ntrn = round(data_size * (1 - test_size))
 	while True:
 		for index in range(ntrn - n_prev):
-			output = load_minibatch(params, index, embedding, n_prev=n_prev, output=output)
+			output = load_minibatch(params, index, embedding, n_prev=n_prev, output=output, flatten=False)
 			minibatch_X = output['minibatch_X']
 			minibatch_y = output['minibatch_y']
 			X = np.array([minibatch_X])
@@ -33,7 +33,7 @@ def generate_minibatch_evaluate(params, n_prev=2, test_size=0.25, output={}):
 	ntrn = round(data_size * (1 - test_size))
 	while True:
 		for index in range(ntrn ,data_size - n_prev):		
-			output = load_minibatch(params, index, embedding, n_prev=n_prev, output=output)
+			output = load_minibatch(params, index, embedding, n_prev=n_prev, output=output, flatten=False)
 			minibatch_X = output['minibatch_X']
 			minibatch_y = output['minibatch_y']
 			X = np.array([minibatch_X])
@@ -47,7 +47,7 @@ def generate_minibatch_predict(params, n_prev=2, test_size=0.25, output={}):
 	ntrn = round(data_size * (1 - test_size))
 	while True:
 		for index in range(ntrn ,data_size - n_prev):		
-			output = load_minibatch(params, index, embedding, n_prev=n_prev, output=output)
+			output = load_minibatch(params, index, embedding, n_prev=n_prev, output=output, flatten=False)
 			minibatch_X = output['minibatch_X']
 			X = np.array([minibatch_X])
 			yield (X)
@@ -123,7 +123,7 @@ if __name__ == '__main__':
 	in_out_neurons = 100
 	hidden_neurons = 500
 
-	model, name = lstm_vector(n_prev, in_out_neurons, hidden_neurons)
+	model, name = ConvLSTM2D_matrix(n_prev, in_out_neurons, hidden_neurons)
 
 	history = model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=args.steps_per_epoch, epochs=args.epochs)
 	predicted = model.predict_generator(generate_minibatch_predict(params, n_prev=n_prev, output=predict_output), steps=n_prev) 
