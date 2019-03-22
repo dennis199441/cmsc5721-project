@@ -83,9 +83,9 @@ def get_test_data(data, test_size=0.25):
 	ntrn = round(len(data) * (1 - test_size))
 	return data[ntrn:]
 
-def save_model(model, history, name):
-	model_name = './{}.pickle'.format(name)
-	history_name = './{}.pickle'.format(name + '_history')
+def save_model(model, history, steps, epochs, name):
+	model_name = './{}_steps_{}_epochs_{}.pickle'.format(name, steps, epochs)
+	history_name = './{}_steps_{}_epochs_{}{}.pickle'.format(name, steps, epochs, '_history')
 	pickle_model = open(model_name, 'wb')
 	pickle.dump(model, pickle_model)
 	pickle_model.close()
@@ -123,17 +123,19 @@ if __name__ == '__main__':
 	evaluate_output = {}
 
 	n_prev = args.n_prev
+	steps = args.steps_per_epoch
+	epochs = args.epochs
 
 	in_out_neurons = 117760
 	hidden_neurons = 500
 
 	model, name = ConvLSTM2D_matrix(n_prev, in_out_neurons, hidden_neurons)
 
-	history = model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=args.steps_per_epoch, epochs=args.epochs)
+	history = model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=steps, epochs=epochs)
 	predicted = model.predict_generator(generate_minibatch_predict(params, n_prev=n_prev, output=predict_output), steps=n_prev) 
 	score = model.evaluate_generator(generate_minibatch_evaluate(params, n_prev=n_prev, output=evaluate_output), steps=n_prev)
 	
-	save_model(model, history, name)
+	save_model(model, history, steps, epochs, name)
 
 	print("loss, mae, mape, mse == {}".format(score))
 	
