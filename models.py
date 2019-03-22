@@ -4,14 +4,6 @@ from keras.layers.normalization import BatchNormalization
 from keras.layers.recurrent import LSTM
 from keras.layers.convolutional_recurrent import ConvLSTM2D
 
-'''
-Task 1: Given the historical graph embedding matrices, predict the next graph embedding matrix
-
-python3 embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6' --embedding 'gcn' --n_prev 30 --batch_size 200
-
-
-python embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder C:/Users/cwxxcheun/Desktop/Other/github/cmsc5721-project/network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6 --embedding gcn --n_prev 30  --batch_size 200
-'''
 def lstm_vector(n_prev, in_out_neurons, hidden_neurons):
 	name = 'LSTM_n_prev_{}_hidden_neurons_{}'.format(n_prev, hidden_neurons)
 	model = Sequential()
