@@ -177,10 +177,16 @@ if __name__ == '__main__':
 	minibatch_X = output['minibatch_X']
 	minibatch_y = output['minibatch_y']
 	order = output['order']
-
+	print()
+	print(minibatch_X)
+	print(minibatch_y)
 
 	output = load_minibatch(params, 1, 'gcn', n_prev=5, output=output)
 
 	minibatch_X = output['minibatch_X']
 	minibatch_y = output['minibatch_y']
 	order = output['order']
+	
+	print()
+	print(minibatch_X)
+	print(minibatch_y)
