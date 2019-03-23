@@ -32,6 +32,6 @@ def ConvLSTM2D_matrix(n_prev, in_out_neurons, hidden_neurons):
 	model.add(BatchNormalization())
 	model.add(Conv2D(filters=1, kernel_size=(3,3), activation='sigmoid', padding='same', data_format='channels_last'))
 
-	model.compile(loss='mean_squared_error', optimizer='adam')
+	model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mae', 'mape', 'mse'])
 
 	return model, name
