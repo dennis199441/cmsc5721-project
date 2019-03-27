@@ -3,6 +3,7 @@ import numpy as np
 from data_preprocessing import load_minibatch
 from load_data import get_stock_map
 from models import *
+from keras.callbacks import Callback
 
 '''
 Task 1: Given the historical graph embedding matrices, predict the next graph embedding matrix
@@ -12,6 +13,10 @@ python3 embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder $
 python embedding_prediction.py --timescale 250 --threshold 0.6 --input_folder C:/data_path --embedding gcn --n_prev 30  --steps_per_epoch 1000 --epochs 20
 
 '''
+class ComputeMetrics(Callback):
+	def on_epoch_end(self, epoch, logs):
+		save_model(model, None, epochs, name)
+
 def generate_minibatch_fit(params, n_prev=2, test_size=0.25, output={}):
 	order = []
 	embedding = params['embedding']
@@ -84,15 +89,17 @@ def get_test_data(data, test_size=0.25):
 	return data[ntrn:]
 
 def save_model(model, history, steps, epochs, name):
-	model_name = './{}_steps_{}_epochs_{}.pickle'.format(name, steps, epochs)
-	history_name = './{}_steps_{}_epochs_{}{}.pickle'.format(name, steps, epochs, '_history')
-	pickle_model = open(model_name, 'wb')
-	pickle.dump(model, pickle_model)
-	pickle_model.close()
+	if model:
+		model_name = './{}_steps_{}_epochs_{}.pickle'.format(name, steps, epochs)
+		pickle_model = open(model_name, 'wb')
+		pickle.dump(model, pickle_model)
+		pickle_model.close()
 
-	pickle_history = open(history_name, 'wb')
-	pickle.dump(model, pickle_history)
-	pickle_history.close()
+	if history:
+		history_name = './{}_steps_{}_epochs_{}{}.pickle'.format(name, steps, epochs, '_history')
+		pickle_history = open(history_name, 'wb')
+		pickle.dump(history, pickle_history)
+		pickle_history.close()
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
@@ -131,7 +138,7 @@ if __name__ == '__main__':
 
 	model, name = ConvLSTM2D_matrix(n_prev, in_out_neurons, hidden_neurons)
 
-	history = model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=steps, epochs=epochs)
+	history = model.fit_generator(generate_minibatch_fit(params, n_prev=n_prev, output=fit_output),steps_per_epoch=steps, epochs=epochs, callbacks=[ComputeMetrics()])
 	predicted = model.predict_generator(generate_minibatch_predict(params, n_prev=n_prev, output=predict_output), steps=n_prev) 
 	score = model.evaluate_generator(generate_minibatch_evaluate(params, n_prev=n_prev, output=evaluate_output), steps=n_prev)
 	
