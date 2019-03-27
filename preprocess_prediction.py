@@ -5,7 +5,7 @@ from load_data import get_stock_map, get_embedding_foldername
 
 '''
 
-python3 data_preprocessing.py --timescale 250 --threshold 0.6 --input_folder './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6' --embedding 'gcn'
+python3 prepross_prediction.py --timescale 250 --threshold 0.6 --input_folder './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6' --embedding 'gcn'
 
 '''
 def get_sorted_embedding(folder, embedding, from_date, to_date, order, flatten=True):

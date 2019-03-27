@@ -1,6 +1,6 @@
 import argparse, pickle
 import numpy as np
-from data_preprocessing import load_minibatch
+from preprocess_prediction import load_minibatch
 from load_data import get_stock_map
 from models import *
 from keras.callbacks import Callback
