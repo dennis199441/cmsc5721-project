@@ -1,6 +1,6 @@
 import networkx as nx
 import numpy as np
-import random
+import random, pickle
 
 class Strategies(object):
 
@@ -127,6 +127,24 @@ class Strategies(object):
 		for cluster in clusters:
 			sorted_cluster = sorted(cluster, key=lambda x: x[1], reverse=False)
 			portfolio.append(sorted_cluster[0])
+
+		return self.__normalize_portfolio_weight(portfolio)
+
+	@classmethod
+	def embedding_classification(self, n, model, embedding_matrix, embedding_list):
+		if embedding_matrix is None or embedding_list is None:
+			return []
+		
+		portfolio = []
+		classification = model.predict(embedding_matrix)
+
+		result = []
+		for i in range(len(classification)):
+			result.append((classification[i][0], embedding_list[i]))
+		result = sorted(result, key=lambda tup: tup[0], reverse=True)
+
+		for i in range(n):
+			portfolio.append((result[i][1], 1))
 
 		return self.__normalize_portfolio_weight(portfolio)
 

@@ -77,7 +77,7 @@ def main():
 	params['dates'] = dates
 	params['timescale'] = 250
 	params['threshold'] = 0.5
-	params['input_folder'] = './network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6'
+	params['input_folder'] = './network_data'
 
 	output = {}
 	output = load_minibatch(params, 0, output=output)

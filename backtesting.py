@@ -4,10 +4,13 @@ import networkx as nx
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-from load_data import get_network_name, get_stock_map, get_date_index, get_embedding_foldername
+from load_data import get_network_name, get_stock_map, get_date_index, get_embedding_foldername, calculate_log_return
 from strategy import Strategies
 from portfolio import Portfolio
 
+'''
+python3 backtesting.py --timescale 250 --threshold 0.6 --input_folder ./network_data/daily_net/metadata_stocknet_timescale_250threshold_0.6 --portfolio_size 15 --embedding gcn --model_name Feed_Forward_NN_features_256_hidden_neurons_100_epochs_20_embedding_gcn.pickle
+'''
 def draw_degree_distribution(graph):
 	degree_sequence = [d for n, d in graph.degree()]
 	hist = {}
@@ -45,6 +48,7 @@ if __name__ == "__main__":
 	parser.add_argument('--portfolio_size', help="portfolio size", type=int, default=20)
 	parser.add_argument('--init_portfolio_val', help="initial portfolio value", type=int, default=100000)
 	parser.add_argument('--embedding', help="embedding algorithm", type=str, default=None)
+	parser.add_argument('--model_name', help="Classifier pickle name", type=str, default=None)
 
 	args = parser.parse_args()
 	
@@ -56,12 +60,18 @@ if __name__ == "__main__":
 	LAST_DAY = DATES[-1]
 	INITIAL_PORTFOLIO_VALUE = args.init_portfolio_val
 	EMBEDDING = args.embedding
+	model_name = args.model_name
+
+	if model_name is not None:
+		pickle_in = open(FOLDER_NAME + 'classifier/' + model_name, 'rb')
+		model = pickle.load(pickle_in)
 
 	print("TIMESCALE: {}".format(TIMESCALE))
 	print("THRESHOLD: {}".format(THRESHOLD))
 	print("FOLDER_NAME: {}".format(FOLDER_NAME))
 	print("PORTFOLIO_SIZE: {}".format(PORTFOLIO_SIZE))
 	print("INITIAL_PORTFOLIO_VALUE: {}".format(INITIAL_PORTFOLIO_VALUE))
+	print("EMBEDDING: {}".format(EMBEDDING))
 
 	STOCK_PORTFOLIO = Portfolio(cash=INITIAL_PORTFOLIO_VALUE)
 	INDEX_PORTFOLIO = Portfolio(cash=INITIAL_PORTFOLIO_VALUE)
@@ -107,8 +117,9 @@ if __name__ == "__main__":
 				STOCK_NETWORK = pickle.load(pickle_in)
 
 				# selected_portfolio = Strategies.top_n_return_rate(STOCK_NETWORK, PORTFOLIO_SIZE)
-				selected_portfolio = Strategies.kmeans_lowest_std(STOCK_NETWORK, PORTFOLIO_SIZE, embedding_matrix, embedding_list)
-
+				# selected_portfolio = Strategies.kmeans_lowest_std(STOCK_NETWORK, PORTFOLIO_SIZE, embedding_matrix, embedding_list)
+				selected_portfolio = Strategies.embedding_classification(PORTFOLIO_SIZE, model, embedding_matrix, embedding_list)
+				
 				print("=============================================================================================")
 				print("Stock Network: {}".format(NETWORK_NAME))
 				print("\nselected_portfolio: ", selected_portfolio)
@@ -156,7 +167,9 @@ if __name__ == "__main__":
 	print("=============================================================================================")
 	plt.title("Portfolio value")
 	print("Portfolio Annual Return: {}".format(annual_return(PORTFOLIO_VALUE, 5)))
+	print("Portfolio Standard Deviation: {}".format(np.std(calculate_log_return(PORTFOLIO_VALUE))))
 	print("Index Annual Return: {}".format(annual_return(INDEX_PORTFOLIO_VALUE, 5)))
+	print("Index Standard Deviation: {}".format(np.std(calculate_log_return(INDEX_PORTFOLIO_VALUE))))
 	plt.plot(PORTFOLIO_VALUE, label='portfolio')
 	plt.plot(INDEX_PORTFOLIO_VALUE, label='index')
 	plt.hlines(INITIAL_PORTFOLIO_VALUE, 0, len(PORTFOLIO_VALUE), linestyle="dashed", colors='grey')
