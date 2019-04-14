@@ -109,7 +109,7 @@ if __name__ == '__main__':
 	params['embedding'] = embedding
 
 	number_of_features = (256,)
-	model, name = Feed_Forward_NN(hidden_neurons, number_of_features)
+	model, name = Feed_Forward_NN_adam(hidden_neurons, number_of_features)
 	history = model.fit_generator(generate_minibatch_fit(params), steps_per_epoch=1000, epochs=epochs, callbacks=[ComputeMetrics()])	
 	predicted = model.predict_generator(generate_minibatch_predict(params), steps=1000) 
 	score = model.evaluate_generator(generate_minibatch_fit(params), steps=1000)

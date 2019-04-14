@@ -14,6 +14,16 @@ def Feed_Forward_NN(hidden_neurons, number_of_features):
 	model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 	return model, name
 
+
+def Feed_Forward_NN_adam(hidden_neurons, number_of_features):
+	name = 'Feed_Forward_NN_adam_features_{}_hidden_neurons_{}'.format(number_of_features[0], hidden_neurons)
+	model = Sequential()
+	model.add(Dense(units=hidden_neurons, activation='relu', input_shape=number_of_features))
+	model.add(Dense(units=hidden_neurons, activation='relu'))
+	model.add(Dense(units=1, activation='sigmoid'))
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+	return model, name
+
 def LSTM_vector(n_prev, in_out_neurons, hidden_neurons):
 	name = 'LSTM_n_prev_{}_hidden_neurons_{}'.format(n_prev, hidden_neurons)
 	model = Sequential()
