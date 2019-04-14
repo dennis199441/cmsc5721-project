@@ -4,24 +4,24 @@ from keras.layers.normalization import BatchNormalization
 from keras.layers.recurrent import LSTM
 from keras.layers.convolutional import Conv2D, Conv3D
 from keras.layers.convolutional_recurrent import ConvLSTM2D
+from keras.regularizers import l2
 
-def Feed_Forward_NN(hidden_neurons, number_of_features):
-	name = 'Feed_Forward_NN_features_{}_hidden_neurons_{}'.format(number_of_features[0], hidden_neurons)
+def Feed_Forward_NN(hidden_neurons, number_of_features, optimizer):
+	name = 'Feed_Forward_NN_{}_features_{}_hidden_neurons_{}'.format(optimizer, number_of_features[0], hidden_neurons)
 	model = Sequential()
 	model.add(Dense(units=hidden_neurons, activation='relu', input_shape=number_of_features))
 	model.add(Dense(units=hidden_neurons, activation='relu'))
 	model.add(Dense(units=1, activation='sigmoid'))
-	model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+	model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 	return model, name
 
-
-def Feed_Forward_NN_adam(hidden_neurons, number_of_features):
-	name = 'Feed_Forward_NN_adam_features_{}_hidden_neurons_{}'.format(number_of_features[0], hidden_neurons)
+def Regularized_Feed_Forward_NN(hidden_neurons, number_of_features, optimizer):
+	name = 'Regularized_Feed_Forward_NN_{}_features_{}_hidden_neurons_{}'.format(optimizer, number_of_features[0], hidden_neurons)
 	model = Sequential()
-	model.add(Dense(units=hidden_neurons, activation='relu', input_shape=number_of_features))
-	model.add(Dense(units=hidden_neurons, activation='relu'))
+	model.add(Dense(units=hidden_neurons, activation='relu', kernel_regularizer=l2(0.001), input_shape=number_of_features))
+	model.add(Dense(units=hidden_neurons, activation='relu', kernel_regularizer=l2(0.001)))
 	model.add(Dense(units=1, activation='sigmoid'))
-	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+	model.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 	return model, name
 
 def LSTM_vector(n_prev, in_out_neurons, hidden_neurons):

@@ -89,11 +89,15 @@ if __name__ == '__main__':
 	parser.add_argument('--epochs', help="number of epochs", type=int, default=20)
 	parser.add_argument('--hidden_neurons', help="number of hidden neurons", type=int, default=30)
 	parser.add_argument('--steps_per_epoch', help="steps per epoch", type=int, default=1000)
+	parser.add_argument('--optimizer', help="model optimizer", type=str, default="rmsprop")
+	parser.add_argument('--regularization', help="model regularization", type=bool, default=False)
 	
 	args = parser.parse_args()
 
 	_, dates = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
 
+	regularization = args.regularization
+	optimizer = args.optimizer
 	epochs = args.epochs
 	steps = args.steps_per_epoch
 	hidden_neurons = args.hidden_neurons
@@ -109,7 +113,10 @@ if __name__ == '__main__':
 	params['embedding'] = embedding
 
 	number_of_features = (256,)
-	model, name = Feed_Forward_NN_adam(hidden_neurons, number_of_features)
+	if regularization == True:
+		model, name = Regularized_Feed_Forward_NN(hidden_neurons, number_of_features, optimizer)
+	else:
+		model, name = Feed_Forward_NN(hidden_neurons, number_of_features, optimizer)
 	history = model.fit_generator(generate_minibatch_fit(params), steps_per_epoch=1000, epochs=epochs, callbacks=[ComputeMetrics()])	
 	predicted = model.predict_generator(generate_minibatch_predict(params), steps=1000) 
 	score = model.evaluate_generator(generate_minibatch_fit(params), steps=1000)
