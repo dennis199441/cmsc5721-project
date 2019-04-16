@@ -4,16 +4,28 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
+plt.figure(1)
+plt.title('Training loss using Adam Optimization')
 folder_path = './network_data/classifier'
 classifiers = os.listdir(folder_path)
 for classifier in classifiers:
-	if classifier.endswith('history.pickle'):
+	if 'adam' in classifier and classifier.endswith('history.pickle'):
 		history_in = open(folder_path + '/' + classifier, 'rb')
 		history = pickle.load(history_in)
-		print(classifier)
-		print(history.history)
-		print()
+		names = classifier.split('_')
+		num_neurons = None
+		embedding = None
+		for i in range(len(names)):
+			if names[i] == 'neurons':
+				num_neurons = names[i + 1]
+			if names[i] == 'embedding':
+				embedding = names[i + 1]
+		label = embedding + '_' + num_neurons
+		loss = history.history['loss']
+		plt.plot(loss, label=label)
 
+plt.legend()
+plt.show()
 '''
 gcn_in = open('./Feed_Forward_NN_features_256_hidden_neurons_100_epochs_20_embedding_gcn_history.pickle', 'rb')
 gcn_nn_hist = pickle.load(gcn_in)
