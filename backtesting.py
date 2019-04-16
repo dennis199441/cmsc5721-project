@@ -66,12 +66,12 @@ if __name__ == "__main__":
 		pickle_in = open(FOLDER_NAME + 'classifier/' + model_name, 'rb')
 		model = pickle.load(pickle_in)
 
-	print("TIMESCALE: {}".format(TIMESCALE))
-	print("THRESHOLD: {}".format(THRESHOLD))
-	print("FOLDER_NAME: {}".format(FOLDER_NAME))
-	print("PORTFOLIO_SIZE: {}".format(PORTFOLIO_SIZE))
-	print("INITIAL_PORTFOLIO_VALUE: {}".format(INITIAL_PORTFOLIO_VALUE))
-	print("EMBEDDING: {}".format(EMBEDDING))
+	# print("TIMESCALE: {}".format(TIMESCALE))
+	# print("THRESHOLD: {}".format(THRESHOLD))
+	# print("FOLDER_NAME: {}".format(FOLDER_NAME))
+	# print("PORTFOLIO_SIZE: {}".format(PORTFOLIO_SIZE))
+	# print("INITIAL_PORTFOLIO_VALUE: {}".format(INITIAL_PORTFOLIO_VALUE))
+	# print("EMBEDDING: {}".format(EMBEDDING))
 
 	STOCK_PORTFOLIO = Portfolio(cash=INITIAL_PORTFOLIO_VALUE)
 	INDEX_PORTFOLIO = Portfolio(cash=INITIAL_PORTFOLIO_VALUE)
@@ -105,8 +105,9 @@ if __name__ == "__main__":
 				embedding_matrix = np.load(EMBEDDING_FILE_NPY)
 				embedding_list = np.loadtxt(EMBEDDING_FILE_TEXT, dtype='str')
 			except:
-				print("[ERROR] EMBEDDING_FILE_NPY: {}".format(EMBEDDING_FILE_NPY))
-				print("[ERROR] EMBEDDING_FILE_TEXT: {}".format(EMBEDDING_FILE_TEXT))
+				pass
+				# print("[ERROR] EMBEDDING_FILE_NPY: {}".format(EMBEDDING_FILE_NPY))
+				# print("[ERROR] EMBEDDING_FILE_TEXT: {}".format(EMBEDDING_FILE_TEXT))
 
 		if SELL_DATE == '2019-01-24':
 			SELL_DATE = LAST_DAY
@@ -120,12 +121,12 @@ if __name__ == "__main__":
 				# selected_portfolio = Strategies.kmeans_lowest_std(STOCK_NETWORK, PORTFOLIO_SIZE, embedding_matrix, embedding_list)
 				selected_portfolio = Strategies.embedding_classification(PORTFOLIO_SIZE, model, embedding_matrix, embedding_list)
 				
-				print("=============================================================================================")
-				print("Stock Network: {}".format(NETWORK_NAME))
-				print("\nselected_portfolio: ", selected_portfolio)
-				print("\nBuy at: {}, Sell at {}".format(BUY_DATE, SELL_DATE))
-				print("\nCurrent cash: {}".format(STOCK_PORTFOLIO.cash))
-				print("number of node: {}".format(len(STOCK_NETWORK)))
+				# print("=============================================================================================")
+				# print("Stock Network: {}".format(NETWORK_NAME))
+				# print("\nselected_portfolio: ", selected_portfolio)
+				# print("\nBuy at: {}, Sell at {}".format(BUY_DATE, SELL_DATE))
+				# print("\nCurrent cash: {}".format(STOCK_PORTFOLIO.cash))
+				# print("number of node: {}".format(len(STOCK_NETWORK)))
 				## Buy assets
 				for asset in selected_portfolio:
 					stock = asset[0]

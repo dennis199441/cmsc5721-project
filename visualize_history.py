@@ -5,11 +5,11 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 plt.figure(1)
-plt.title('Training loss using Adam Optimization')
+plt.title('Training loss using RMSProp')
 folder_path = './network_data/classifier'
 classifiers = os.listdir(folder_path)
 for classifier in classifiers:
-	if 'adam' in classifier and classifier.endswith('history.pickle'):
+	if 'rmsprop' in classifier and classifier.endswith('history.pickle'):
 		history_in = open(folder_path + '/' + classifier, 'rb')
 		history = pickle.load(history_in)
 		names = classifier.split('_')
@@ -20,6 +20,11 @@ for classifier in classifiers:
 				num_neurons = names[i + 1]
 			if names[i] == 'embedding':
 				embedding = names[i + 1]
+		if embedding == 'gcn':
+			embedding = 'GS-GCN'
+		elif embedding == 'graphsage':
+			embedding = 'GS-Mean'
+
 		label = embedding + '_' + num_neurons
 		loss = history.history['loss']
 		plt.plot(loss, label=label)
