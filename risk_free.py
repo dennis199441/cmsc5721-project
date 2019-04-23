@@ -11,7 +11,7 @@ def read_txt(filename):
 	return res
 
 if __name__ == '__main__':
-	res = read_txt('./risk_free.txt')
+	res = read_txt('./market_data/risk_free.txt')
 	annual = np.mean(res) / 100
 	daily = (annual + 1)**(1/250) - 1
 	print("Annual risk free: {}".format(annual))
