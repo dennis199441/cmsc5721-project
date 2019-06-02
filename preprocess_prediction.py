@@ -105,7 +105,7 @@ def load_minibatch(params, index, embedding, n_prev=2, output={}, flatten=True):
 		return output
 
 def main():
-	INDEX_MAP, DATES = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
+	INDEX_MAP, DATES = get_stock_map(data_path="market_data/sandp500_data/index", size=1, is_index=True)
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--timescale', help="correlation timescale", type=int, default=250)
 	parser.add_argument('--threshold', help="corelation threshold for edges", type=float, default=0.6)
@@ -171,7 +171,7 @@ def main():
 
 if __name__ == '__main__':
 	# main()
-	_, dates = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
+	_, dates = get_stock_map(data_path="market_data/sandp500_data/index", size=1, is_index=True)
 	params = {}
 	params['dates'] = dates
 	params['timescale'] = 250

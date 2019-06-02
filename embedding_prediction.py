@@ -116,7 +116,7 @@ if __name__ == '__main__':
 	Read Embedding file by file, instead of loading all embeddings into memory!!!
 	Read file should be done in generate_arrays_from_matrices()
 	'''
-	_, dates = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
+	_, dates = get_stock_map(data_path="market_data/sandp500_data/index", size=1, is_index=True)
 	params = {}
 	params['dates'] = dates
 	params['timescale'] = args.timescale

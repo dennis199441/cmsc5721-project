@@ -6,7 +6,7 @@ from pytalib.graph import visibility_graph
 from itertools import combinations
 from scipy import stats
 
-def get_stock_map(data_path="sandp500_data", size=10, is_index=False):
+def get_stock_map(data_path="market_data/sandp500_data", size=10, is_index=False):
 	if not is_index:
 		industry_pickle = open(data_path + '/industry_dict.pickle', "rb")
 		industry_dict = pickle.load(industry_pickle)

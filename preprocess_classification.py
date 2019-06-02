@@ -72,7 +72,7 @@ def load_minibatch(params, index, embedding):
 		print("from_date: {}, to_date: {}".format(from_date, to_date))
 
 def main():
-	_, dates = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
+	_, dates = get_stock_map(data_path="market_data/sandp500_data/index", size=1, is_index=True)
 	params = {}
 	params['dates'] = dates
 	params['timescale'] = 250
@@ -83,7 +83,7 @@ def main():
 	output = load_minibatch(params, 0, output=output)
 
 if __name__ == '__main__':
-	_, dates = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
+	_, dates = get_stock_map(data_path="market_data/sandp500_data/index", size=1, is_index=True)
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--timescale', help="correlation timescale", type=int, default=250)

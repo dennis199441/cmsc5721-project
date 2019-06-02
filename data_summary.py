@@ -64,7 +64,7 @@ def average_closeness_centrality(G):
 if __name__ == "__main__":
 
 	STOCK_MAP, DATES = get_stock_map(size=5000)
-	INDEX_MAP, DATES = get_stock_map(data_path="sandp500_data/index", size=1, is_index=True)
+	INDEX_MAP, DATES = get_stock_map(data_path="market_data/sandp500_data/index", size=1, is_index=True)
 
 	FOLDER_NAME = 'network_data/graphs/'
 	TIMESCALE = 250
@@ -93,24 +93,25 @@ if __name__ == "__main__":
 			print("=============================================================================================")
 			print("Stock Network: {}".format(NETWORK_NAME))
 
-			# degree_sequence = sorted([d for n, d in STOCK_NETWORK.degree()], reverse=True)
+			degree_sequence = sorted([d for n, d in STOCK_NETWORK.degree()], reverse=True)
 			
 			# print("number_of_edges: {}".format(STOCK_NETWORK.number_of_edges()))
 			# print("avg. clustering coeff: {}".format(average_clustering_coefficient(STOCK_NETWORK)))
 			# print("avg. degree: {}".format(average_degree(degree_sequence)))
 			# print("avg. path length: {}".format(average_shortest_path_length(STOCK_NETWORK)))
-
+			AVG_DEGREE.append(average_degree(degree_sequence))
 			# NUM_EDGES.append(STOCK_NETWORK.number_of_edges())
-			BETWEENNESS.append(average_betweenness_centrality(STOCK_NETWORK))
-			CLOSENESS.append(average_closeness_centrality(STOCK_NETWORK))
+			# BETWEENNESS.append(average_betweenness_centrality(STOCK_NETWORK))
+			# CLOSENESS.append(average_closeness_centrality(STOCK_NETWORK))
 			# INDEX_PRICE.append(INDEX_MAP['SPY']['price'][index])
-
-	draw_time_series(BETWEENNESS, 'Average betweenness centrality')
-	draw_time_series(CLOSENESS, 'Average closeness centrality')
+	
+	# draw_time_series(INDEX_PRICE, 'Index price')
+	# draw_time_series(BETWEENNESS, 'Average betweenness centrality')
+	# draw_time_series(CLOSENESS, 'Average closeness centrality')
 
 	# draw_time_series(NUM_EDGES, 'Number of edges')
 	# draw_time_series(CLUSTERING_COEFFICIENT, 'Average clustering coefficient')
-	# draw_time_series(AVG_DEGREE, 'Average degree')
+	draw_time_series(AVG_DEGREE, 'Average degree')
 	# draw_time_series(ISOLATES, 'Number of isolates')
 	# draw_time_series(COMPONENTS, 'Number of connected components')
 
