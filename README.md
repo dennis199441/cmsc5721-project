@@ -1,36 +1,19 @@
 # cmsc5721-project
 
 ## Introduction
-In this project, we constructed a series of monthly-based stock correlation networks under different timeframe. Correlation coefficient is computed for each pair of stocks using the historical price data under a specified timeframe. Stocks are connected to each other if their correlation is greater than a pre-defined threshold.
+In order to maximize the risk-adjusted return with restricted portfolio size, we build a systematic pipeline for portfolio selection based on stock correlation network and machine learning. We first construct a stream of correlation networks using historical market data. Then, we transform the correlation networks into embedding matrices and feed them into a feedforward neural network to train a stock performance classifier. Finally, we use our classifier to perform portfolio selection tasks and evaluate the performance against the benchmark portfolio by comparing the risk adjusted return. The pipeline is tested using S&P 500 historical market data and the experimental results show that the portfolio selected by our stock performance classifier outperforms the benchmark portfolio by 40.90% in terms of risk adjusted return.
 
 ## Data source
-All stock data is provided for free by IEX.
-We collected Open-High-Low-Close-Volume data for all stocks listed in S&P500 from 2014-01-24 to 2019-01-23 using IEX's API. There are in total 500 stocks.
+The data used in this project is retrieved from IEXtrading.com. Stock’s Open-High-Low-Close price data between 24/01/2014 and 23/01/2019 is collected for each stock listed in S&P 500 using IEX API v1.0. There are totally 500 stocks in S&P 500. However, missing data is found in 40 stocks for particular days. In order to keep the data consistency such that every stock should have the same number of data points on the same day, those stocks with missing data are drop out from our experiment.
 
-Number of stock: 500
-Date ranges: 2014-01-24 to 2019-01-23
-
-## Graph definition
-### Time frame
-1. 6 months
-2. 12 months
-
-### Node
-Each stock is represented as a node in the stock correlation network. Metadata is embedded in each node.
-
-Metadata:
-1. performance: +1/0/-1 indicate if price increase/remains/decreses throughout the historical time period
-2. mean_return: average daily return under historical time period
-3. std_return: standard deviation daily return under historical time period
-
-
-### Edge
-Stock pairwise correlation is computed in order to decide whether there is an edge between two stocks. Intuitively, stock pair with low absolute correlation coefficient, relatively close to zero, is very weakly correlated. We filtered out these edges using a threshold theta (0.6) so that edge exists only if there are some relatively significant relationship between stocks (positively/negatively correlated)
-
-Every edge is weighted by the pairwise correlation coefficient. If the absolute correlation coefficient between the two stocks is greater than the pre-defined threshold, currently 0.6 is used, there is an edge between the two stocks.
-
-## Application
-### Portfolio selection
+| Parameter                 | Number        |
+| ------------------------- | ------------- |
+| Number of stocks          |     460       |
+| From Date                 |  24 Jan 2014  |
+| To Date                   |  23 Jan 2019  |
+| Daily price data length   |     1258      |
+| ROC timeframe             |      1        |
+| Moving average timeframe  |     250       |
 
 
 
